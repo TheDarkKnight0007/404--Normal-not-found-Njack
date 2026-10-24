@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Museum of Incorrect Physics</title>
+    <meta name="description" content="An immersive interactive museum experience where physical laws are unnaturally perfect, exploring what is lost when unpredictability ceases to exist." />
+    <meta property="og:title" content="The Museum of Incorrect Physics" />
+    <meta property="og:description" content="An immersive interactive museum experience where physical laws are unnaturally perfect, exploring what is lost when unpredictability ceases to exist." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Playfair Display & IBM Plex Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+
+    <!-- Museum Vanilla Stylesheet -->
+    <link rel="stylesheet" href="/src/css/style.css" />
+  </head>
+  <body class="opening-film-mode">
+    <!-- Screen Reader Live Announcements -->
+    <div id="live-region" class="sr-only" aria-live="polite"></div>
+
+    <!-- Atmospheric Inverted Cosmos Canvas, Grain & Volumetric Lens Vignette -->
+    <canvas id="viewport-canvas-bg" aria-hidden="true"></canvas>
+    <div class="film-grain" aria-hidden="true"></div>
+    <div class="lens-vignette" aria-hidden="true"></div>
+
+    <!-- Perimeter Architectural Registration Marks (Revealed only after reality failure) -->
+    <div class="arch-mark am-tl" aria-hidden="true">EXHIBIT 000 // SPACETIME FABRIC</div>
+    <div class="arch-mark am-br" aria-hidden="true">CAUSALITY DISTORTION // REPULSIVE GRAVITY</div>
+
+    <!-- Custom Reticle Cursor -->
+    <div id="curatorial-cursor" aria-hidden="true"></div>
+    <div id="curatorial-cursor-dot" aria-hidden="true"></div>
+
+    <!-- Persistent HUD (Hidden during opening film scenes) -->
+    <aside class="cinematic-hud" aria-label="Observation HUD">
+      <div class="hud-top-bar">
+        <span>EXHIBIT 000 // SPACETIME FABRIC</span>
+        <div class="hud-actions">
+          <button id="btn-audio-toggle" class="hud-btn" type="button" aria-label="Toggle procedural audio">
+            AUDIO: OPERATIONAL
+          </button>
+          <button id="btn-skip-prologue" class="hud-btn" type="button" aria-label="Skip prologue sequence">
+            SKIP TO EXHIBIT [ESC]
+          </button>
+        </div>
+      </div>
+      <div class="hud-coordinates" id="void-coordinate-stream" aria-hidden="true">
+        DATUM: 00.000000 | FIELD VARIANCE: -1.000000 ΔS (REPULSIVE)
+      </div>
+    </aside>
+
+    <!-- Main Cinematic Stage Viewport -->
+    <main id="cinematic-stage">
+      
+      <!-- SCENE 1: THE INVERTED VOID & SPACETIME FABRIC -->
+      <section class="cinematic-scene scene-active" id="scene-1-void" aria-label="The Spacetime Fabric"></section>
+
+      <!-- SCENE 6: THE THRESHOLD (INTERACTIVE ANOMALY VITRINE) -->
+      <section class="cinematic-scene" id="scene-6-threshold" aria-labelledby="threshold-heading">
+        
+        <!-- Left Editorial Monograph -->
+        <article class="threshold-editorial">
+          <div class="threshold-kicker">
+            <span>THRESHOLD PROTOCOL</span>
+            <span class="threshold-rule" aria-hidden="true"></span>
+            <span>EXHIBIT 000 / ANOMALY VITRINE</span>
+          </div>
+
+          <h1 class="threshold-title" id="threshold-heading">
+            THE MUSEUM OF<br />
+            <span class="word-incorrect-anom" aria-label="INCORRECT">
+              <span class="char-inc">I</span><span class="char-inc">N</span><span class="char-inc">C</span><span class="char-inc">O</span><span class="char-inc char-levitate">R</span><span class="char-inc char-skew">R</span><span class="char-inc">E</span><span class="char-inc">C</span><span class="char-inc">T</span>
+            </span>
+            <span class="word-physics-buoyant" aria-label="PHYSICS">
+              <span class="char-phys">P</span><span class="char-phys">H</span><span class="char-phys">Y</span><span class="char-phys">S</span><span class="char-phys">I</span><span class="char-phys">C</span><span class="char-phys">S</span>
+            </span>
+          </h1>
+
+          <p class="threshold-subtitle">
+            Some things refuse to behave.
+          </p>
+
+          <div class="threshold-prose">
+            <p>A collection of phenomena that should not exist.</p>
+            <p style="margin-top: 0.6rem; color: var(--color-text-faint); font-size: 11px;">
+              Here, the fundamental constants were calibrated to absolute perfection. In curing the universe of friction, we severed its connection to time.
+            </p>
+          </div>
+
+          <div class="threshold-action-wrap">
+            <div class="gateway-status-badge">
+              <span class="gateway-pip" aria-hidden="true"></span>
+              <span>GATEWAY // PHYSICAL LAWS COMPROMISED</span>
+            </div>
+            <button id="btn-cross-threshold" class="threshold-gate-btn" type="button" aria-label="Cross the Threshold into the Exhibition Hall">
+              <span class="btn-grav-aura" aria-hidden="true"></span>
+              <span class="btn-label">CROSS THE THRESHOLD</span>
+              <span class="btn-glyph" aria-hidden="true">↗</span>
+            </button>
+            <span class="shortcut-text">Press <kbd>E</kbd> or <kbd>Enter</kbd> to cross</span>
+          </div>
+        </article>
+
+        <!-- Right Column: Interactive Anomaly Vitrine -->
+        <section class="threshold-plinth-column" aria-label="Interactive Installation: The Impossible Anomaly">
+          <div class="vitrine-frame">
+            <span class="frame-corner fc-tl" aria-hidden="true"></span>
+            <span class="frame-corner fc-tr" aria-hidden="true"></span>
+            <span class="frame-corner fc-bl" aria-hidden="true"></span>
+            <span class="frame-corner fc-br" aria-hidden="true"></span>
+
+            <span class="vitrine-cardinal vc-n" aria-hidden="true">N · 00°</span>
+            <span class="vitrine-cardinal vc-s" aria-hidden="true">S · 180°</span>
+            <span class="vitrine-cardinal vc-w" aria-hidden="true">W · 270°</span>
+            <span class="vitrine-cardinal vc-e" aria-hidden="true">E · 090°</span>
+
+            <canvas id="sphere-canvas-interactive"></canvas>
+          </div>
+
+          <div class="vitrine-plaque">
+            <span class="plaque-item">ARTIFACT: <span class="highlight-purple">OBJ-000/MALFUNCTION</span></span>
+            <span class="plaque-item" id="spec-gravity-status">
+              <span class="anomaly-pip" aria-hidden="true"></span>
+              GRAVITY STATUS: <span class="highlight-purple">UNVERIFIED</span>
+            </span>
+          </div>
+
+          <div class="vitrine-hint" aria-hidden="true">
+            [APPROACH WITH CURSOR OR TAP ARTIFACT TO PERTURB MASS]
+          </div>
+        </section>
+
+      </section>
+
+    </main>
+
+    <!-- SCENE 7: TITLE-TO-HALL ARCHITECTURAL AIRLOCK TRANSITION -->
+    <div id="aperture-curtain" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Exhibition Hall Airlock">
+      <div class="aperture-rotunda-vault">
+        <span class="rotunda-accession">CHAMBER 000 · AIRLOCK TRANSITION</span>
+        <h2 class="rotunda-title">THE CORRIDOR OF INVARIANTS</h2>
+        <div class="rotunda-divider-line">
+          <div class="rotunda-divider-fill"></div>
+        </div>
+        <p class="rotunda-prose">
+          You have crossed the threshold of absolute calibration.<br />
+          Beyond this vault, four fundamental laws were made perfect.
+        </p>
+        <button id="btn-chamber-return" class="btn-chamber-return" type="button">
+          ← RETURN TO THRESHOLD
+        </button>
+      </div>
+    </div>
+
+    <!-- Application Script (Pure Vanilla JavaScript) -->
+    <script type="module" src="/src/js/main.js"></script>
+  </body>
+</html>
