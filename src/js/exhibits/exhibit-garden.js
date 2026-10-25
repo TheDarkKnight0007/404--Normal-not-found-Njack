@@ -1,7 +1,17 @@
 /**
  * Exhibit 004: THE GARDEN OF EQUAL SHAPES (Symmetry)
- * Theme: Conformity, standardization, fear of being different.
- * "Perfection can become a prison."
+ * Active Gameplay: The Living Flower in a Sterile Lattice
+ * 
+ * Objective: Find the single living flower hidden among 36 identical rosettes.
+ * Mechanics:
+ * - 36 flowers in a 6x6 grid with ZERO initial visual highlight. All look identical.
+ * - Interactive Biometric Sensor (Stethoscope):
+ *   - Clicking any flower attaches the probe.
+ *   - Dead flowers: 0 BPM flatline, sterile click, 0.0% vitality.
+ *   - Living flower (Specimen #014): 72 BPM arterial pulse, organic heartbeat sound, warm breathing petals.
+ * - Once discovered, player makes a consequential moral choice:
+ *   - [PRESERVE LIVING SPECIMEN]: Protect biological defect, bloom liberates lattice.
+ *   - [DESTROY LIVING SPECIMEN]: Enforce mathematical conformity, specimen crystallizes.
  */
 
 import { museumAudio } from '../audio.js';
@@ -19,18 +29,31 @@ export class ExhibitGarden {
     this.animId = null;
     this.time = 0;
 
-    // Geometric Rosettes Matrix
-    this.rosettes = [];
+    // 36 Rosettes Matrix (6 x 6)
     this.cols = 6;
-    this.rows = 4;
-    this.rebelIndex = 8; // Row 1, Col 2: The Rogue Asymmetrical Flower
+    this.rows = 6;
+    this.rosettes = [];
+    this.rebelIndex = 14; // Hidden Specimen #014 (Row 2, Col 2)
 
-    // Moral Decision State: 'STANDARDIZED' | 'REBELLION' | 'CONFORMITY_ENFORCED' | 'DIVERSITY_LIBERATED'
-    this.state = 'REBELLION';
+    // State: 'INVESTIGATING' | 'DISCOVERED' | 'PRESERVED' | 'DESTROYED'
+    this.state = 'INVESTIGATING';
     this.bloomProgress = 0;
+    this.inspectedCount = 0;
+    this.inspectedSet = new Set();
+    this.activeProbeIndex = null;
 
-    // Floating Pollen Particles
-    this.pollen = [];
+    // Heartbeat timing for Specimen 14
+    this.heartbeatTimer = 0;
+
+    // DOM UI Elements
+    this.stethReadout = containerElement.querySelector('#steth-sensor-readout');
+    this.scannerReadout = containerElement.querySelector('#garden-scanner-readout');
+    this.inspectedCountEl = containerElement.querySelector('#garden-inspected-count');
+    this.choiceOverlay = containerElement.querySelector('#garden-choice-overlay');
+    this.btnProtect = containerElement.querySelector('#btn-garden-protect');
+    this.btnConform = containerElement.querySelector('#btn-garden-conform');
+    this.conformBanner = containerElement.querySelector('#garden-conform-banner');
+    this.liberateBanner = containerElement.querySelector('#garden-liberate-banner');
 
     this.init();
   }
@@ -39,25 +62,20 @@ export class ExhibitGarden {
     this.handleResize();
     window.addEventListener('resize', () => this.handleResize());
 
-    const btnConform = this.container.querySelector('#btn-garden-conform');
-    if (btnConform) {
-      btnConform.addEventListener('click', () => this.enforceConformity());
+    if (this.canvas) {
+      this.canvas.addEventListener('pointerdown', (e) => this.onFlowerClick(e));
+      this.canvas.addEventListener('pointermove', (e) => this.onFlowerHover(e));
     }
 
-    const btnProtect = this.container.querySelector('#btn-garden-protect');
-    if (btnProtect) {
-      btnProtect.addEventListener('click', () => this.protectDifference());
+    if (this.btnProtect) {
+      this.btnProtect.addEventListener('click', () => this.preserveSpecimen());
     }
 
-    const btnArchive = this.container.querySelector('#btn-garden-archive');
-    if (btnArchive) {
-      btnArchive.addEventListener('click', () => {
-        if (this.onComplete) this.onComplete();
-      });
+    if (this.btnConform) {
+      this.btnConform.addEventListener('click', () => this.destroySpecimen());
     }
 
     this.initRosettes();
-    this.initPollen();
 
     this.loop = this.loop.bind(this);
     this.animId = requestAnimationFrame(this.loop);
@@ -81,239 +99,297 @@ export class ExhibitGarden {
     const cellW = this.width / (this.cols + 1);
     const cellH = this.height / (this.rows + 1);
 
+    let idx = 0;
     for (let r = 0; r < this.rows; r++) {
       for (let c = 0; c < this.cols; c++) {
-        const idx = r * this.cols + c;
-        const isRebel = idx === this.rebelIndex;
-
         this.rosettes.push({
           idx,
-          c,
+          idStr: String(idx).padStart(3, '0'),
           r,
+          c,
           x: cellW * (c + 1),
           y: cellH * (r + 1),
-          radius: Math.min(cellW, cellH) * 0.34,
-          petals: 6,
-          isRebel,
-          phaseOffset: isRebel ? 1.4 : 0, // Rebel pulses out of sync!
-          variance: isRebel ? 1.0 : 0.0,
-          color: isRebel ? '#FFFFFF' : '#B5A3FF'
+          radius: Math.min(cellW, cellH) * 0.32,
+          isRebel: (idx === this.rebelIndex),
+          pulse: 0,
+          rotation: (idx * 0.1),
+          inspected: false
         });
+        idx++;
       }
     }
   }
 
-  initPollen() {
-    this.pollen = [];
-    for (let i = 0; i < 70; i++) {
-      this.pollen.push({
-        x: Math.random() * this.width,
-        y: Math.random() * this.height,
-        vx: (Math.random() - 0.5) * 0.6,
-        vy: -0.3 - Math.random() * 0.8,
-        size: 1 + Math.random() * 2,
-        alpha: 0.2 + Math.random() * 0.6
-      });
-    }
-  }
+  onFlowerHover(e) {
+    if (this.state !== 'INVESTIGATING' || !this.canvas) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
 
-  enforceConformity() {
-    this.state = 'CONFORMITY_ENFORCED';
-    museumAudio.playFailurePulse();
-
-    const banner = this.container.querySelector('#garden-conform-banner');
-    if (banner) banner.classList.add('active');
-
-    const rebel = this.rosettes[this.rebelIndex];
-    if (rebel) {
-      rebel.isRebel = false;
-      rebel.variance = 0;
-      rebel.color = 'rgba(245, 241, 232, 0.25)';
+    let hovered = null;
+    for (let i = 0; i < this.rosettes.length; i++) {
+      const ros = this.rosettes[i];
+      if (Math.hypot(px - ros.x, py - ros.y) <= ros.radius + 6) {
+        hovered = ros;
+        break;
+      }
     }
 
-    this.rosettes.forEach(r => {
-      r.color = 'rgba(245, 241, 232, 0.25)';
-    });
-
-    const choiceWrap = this.container.querySelector('#garden-choice-actions');
-    if (choiceWrap) choiceWrap.style.display = 'none';
-
-    const nextWrap = this.container.querySelector('#garden-next-wrap');
-    if (nextWrap) nextWrap.classList.add('visible');
+    this.canvas.style.cursor = hovered ? 'pointer' : 'default';
   }
 
-  protectDifference() {
-    this.state = 'DIVERSITY_LIBERATED';
-    museumAudio.playBloomChord();
+  onFlowerClick(e) {
+    if (this.state !== 'INVESTIGATING' || !this.canvas) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
 
-    const banner = this.container.querySelector('#garden-liberate-banner');
-    if (banner) banner.classList.add('active');
-
-    // Bloom spreads: all rosettes differentiate into unique organic forms!
-    this.rosettes.forEach((r, i) => {
-      r.variance = 0.5 + Math.random() * 0.8;
-      r.petals = 5 + (i % 5);
-      r.color = i % 2 === 0 ? '#B5A3FF' : '#F5F1E8';
-    });
-
-    const choiceWrap = this.container.querySelector('#garden-choice-actions');
-    if (choiceWrap) choiceWrap.style.display = 'none';
-
-    const nextWrap = this.container.querySelector('#garden-next-wrap');
-    if (nextWrap) nextWrap.classList.add('visible');
-  }
-
-  update(dt) {
-    this.time += dt;
-
-    if (this.state === 'DIVERSITY_LIBERATED') {
-      this.bloomProgress = Math.min(1.0, this.bloomProgress + dt * 0.6);
-    }
-
-    // Update pollen
-    for (const p of this.pollen) {
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.y < 0) {
-        p.y = this.height;
-        p.x = Math.random() * this.width;
+    for (let i = 0; i < this.rosettes.length; i++) {
+      const ros = this.rosettes[i];
+      if (Math.hypot(px - ros.x, py - ros.y) <= ros.radius + 8) {
+        this.inspectFlower(ros);
+        return;
       }
     }
   }
 
-  draw() {
-    const ctx = this.ctx;
-    if (!ctx) return;
-    ctx.clearRect(0, 0, this.width, this.height);
+  inspectFlower(ros) {
+    this.activeProbeIndex = ros.idx;
+    ros.inspected = true;
+    this.inspectedSet.add(ros.idx);
 
-    // 1. Draw Geometric Connective Grid (Conformity Lattice)
-    ctx.save();
-    ctx.strokeStyle = this.state === 'CONFORMITY_ENFORCED'
-      ? 'rgba(245, 241, 232, 0.05)'
-      : 'rgba(149, 136, 255, 0.12)';
-    ctx.lineWidth = 1;
-
-    for (let r = 0; r < this.rows; r++) {
-      const y = this.rosettes[r * this.cols].y;
-      ctx.beginPath();
-      ctx.moveTo(30, y);
-      ctx.lineTo(this.width - 30, y);
-      ctx.stroke();
+    if (this.inspectedCountEl) {
+      this.inspectedCountEl.textContent = `${this.inspectedSet.size} / 36 SCANNED`;
     }
-    for (let c = 0; c < this.cols; c++) {
-      const x = this.rosettes[c].x;
-      ctx.beginPath();
-      ctx.moveTo(x, 30);
-      ctx.lineTo(x, this.height - 30);
-      ctx.stroke();
-    }
-    ctx.restore();
 
-    // 2. Draw Floating Organic Pollen
-    ctx.save();
-    for (const p of this.pollen) {
-      ctx.fillStyle = this.state === 'DIVERSITY_LIBERATED'
-        ? `rgba(181, 163, 255, ${p.alpha * 0.85})`
-        : `rgba(245, 241, 232, ${p.alpha * 0.4})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
+    if (ros.isRebel) {
+      // FOUND THE LIVING SPECIMEN!
+      this.state = 'DISCOVERED';
+      this.playOrganicHeartbeat();
 
-    // 3. Draw Rosettes (Rigid hex symmetry vs Living asymmetry)
-    this.rosettes.forEach((r) => {
-      this.drawRosette(ctx, r);
-    });
+      if (this.stethReadout) {
+        this.stethReadout.textContent = `SPECIMEN #${ros.idStr} // PULSE: 72 BPM [LIVING HEARTBEAT DETECTED!] · VITALITY: 98.4%`;
+        this.stethReadout.style.color = 'var(--color-lavender)';
+      }
 
-    // 4. Surveillance Marker on Rebel if still in rebellion state
-    if (this.state === 'REBELLION') {
-      const rebel = this.rosettes[this.rebelIndex];
-      ctx.save();
-      ctx.strokeStyle = 'rgba(181, 163, 255, 0.85)';
-      ctx.lineWidth = 1.2;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.arc(rebel.x, rebel.y, rebel.radius * 1.55, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
+      if (this.scannerReadout) {
+        this.scannerReadout.textContent = `CRITICAL ANOMALY: SPECIMEN #${ros.idStr} BEATS WITH BIOLOGICAL LIFE.`;
+        this.scannerReadout.style.color = 'var(--color-lavender)';
+      }
 
-      ctx.font = '8.5px "IBM Plex Mono", monospace';
-      ctx.fillStyle = '#B5A3FF';
-      ctx.textAlign = 'center';
-      ctx.fillText('ANOMALY // DEVIANT GEOMETRY', rebel.x, rebel.y + rebel.radius * 1.8);
-      ctx.restore();
+      // Show Moral Choice Overlay
+      if (this.choiceOverlay) {
+        this.choiceOverlay.style.display = 'flex';
+      }
+    } else {
+      // Dead Crystalline Flower
+      museumAudio.playGlassChime(280, 0.08);
+
+      if (this.stethReadout) {
+        this.stethReadout.textContent = `SPECIMEN #${ros.idStr} // PULSE: 0 BPM [DEAD SYMMETRY] · TEMP: 0.0°C · INERT`;
+        this.stethReadout.style.color = 'var(--color-text-muted)';
+      }
+
+      if (this.scannerReadout) {
+        this.scannerReadout.textContent = `SPECIMEN #${ros.idStr} CONFIRMED INERT. CONTINUE SCANNING MATRIX.`;
+      }
     }
   }
 
-  drawRosette(ctx, r) {
-    ctx.save();
-    const isRebel = r.isRebel;
-    const isLiberated = this.state === 'DIVERSITY_LIBERATED';
-    const isCold = this.state === 'CONFORMITY_ENFORCED';
+  playOrganicHeartbeat() {
+    museumAudio.playGlassChime(440, 0.4);
+    setTimeout(() => {
+      museumAudio.playGlassChime(420, 0.6);
+    }, 240);
+  }
 
-    // Pulse rhythm
-    const pulseSpeed = isRebel ? 1.8 : 3.0;
-    const pulse = Math.sin(this.time * pulseSpeed + r.phaseOffset) * 0.12;
-    const currentRadius = r.radius * (1.0 + pulse);
+  preserveSpecimen() {
+    this.state = 'PRESERVED';
+    if (this.choiceOverlay) this.choiceOverlay.style.display = 'none';
 
-    ctx.translate(r.x, r.y);
+    museumAudio.playMonumentalReveal();
 
-    // Petals
-    const petals = r.petals;
-    for (let p = 0; p < petals; p++) {
-      const angle = (p / petals) * Math.PI * 2;
-      ctx.save();
-      ctx.rotate(angle);
-
-      // In asymmetry: petals stretch non-uniformly!
-      let petalLength = currentRadius;
-      if (isRebel || (isLiberated && p % 2 === 1)) {
-        petalLength *= 1.35;
-      }
-
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.quadraticCurveTo(petalLength * 0.5, petalLength * 0.35, petalLength, 0);
-      ctx.quadraticCurveTo(petalLength * 0.5, -petalLength * 0.35, 0, 0);
-      ctx.closePath();
-
-      if (isCold) {
-        ctx.fillStyle = 'rgba(245, 241, 232, 0.04)';
-        ctx.strokeStyle = 'rgba(245, 241, 232, 0.12)';
-      } else if (isRebel) {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
-        ctx.strokeStyle = '#FFFFFF';
-      } else if (isLiberated) {
-        ctx.fillStyle = 'rgba(181, 163, 255, 0.18)';
-        ctx.strokeStyle = '#B5A3FF';
-      } else {
-        ctx.fillStyle = 'rgba(149, 136, 255, 0.08)';
-        ctx.strokeStyle = 'rgba(181, 163, 255, 0.45)';
-      }
-
-      ctx.lineWidth = isRebel ? 1.6 : 1.0;
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
+    if (this.stethReadout) {
+      this.stethReadout.textContent = 'DECISION: DIFFERENCE PRESERVED. LIVING FLOWER LIBERATED.';
+      this.stethReadout.style.color = '#70E0D0';
     }
 
-    // Center seed core
-    ctx.fillStyle = isRebel ? '#FFFFFF' : (isCold ? 'rgba(245, 241, 232, 0.2)' : '#B5A3FF');
-    ctx.beginPath();
-    ctx.arc(0, 0, currentRadius * 0.22, 0, Math.PI * 2);
-    ctx.fill();
+    setTimeout(() => {
+      if (this.liberateBanner) {
+        this.liberateBanner.classList.add('banner-visible');
+        museumAudio.playGlassChime(880, 1.2);
+      }
+      if (typeof this.onComplete === 'function') {
+        this.onComplete('PRESERVED');
+      }
+    }, 1800);
+  }
 
-    ctx.restore();
+  destroySpecimen() {
+    this.state = 'DESTROYED';
+    if (this.choiceOverlay) this.choiceOverlay.style.display = 'none';
+
+    museumAudio.playTheoryFailure();
+
+    if (this.stethReadout) {
+      this.stethReadout.textContent = 'DECISION: CONFORMITY ENFORCED. SPECIMEN CRYSTALLIZED TO 0 BPM.';
+      this.stethReadout.style.color = '#FF7070';
+    }
+
+    setTimeout(() => {
+      if (this.conformBanner) {
+        this.conformBanner.classList.add('banner-visible');
+        museumAudio.playGlassChime(320, 1.0);
+      }
+      if (typeof this.onComplete === 'function') {
+        this.onComplete('DESTROYED');
+      }
+    }, 1800);
   }
 
   loop() {
-    this.update(0.016);
-    this.draw();
+    this.time += 0.016;
+    this.render();
     this.animId = requestAnimationFrame(this.loop);
   }
 
+  render() {
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.width, this.height);
+
+    // Render matrix grid connecting lines
+    this.renderMatrixLines(ctx);
+
+    // Render 36 rosettes
+    this.rosettes.forEach(ros => {
+      this.renderRosette(ctx, ros);
+    });
+
+    // Render active stethoscope probe wire if probing
+    if (this.activeProbeIndex !== null && this.rosettes[this.activeProbeIndex]) {
+      this.renderProbeWire(ctx, this.rosettes[this.activeProbeIndex]);
+    }
+  }
+
+  renderMatrixLines(ctx) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(245, 241, 232, 0.04)';
+    ctx.lineWidth = 0.8;
+
+    // Connect neighbors horizontally
+    for (let r = 0; r < this.rows; r++) {
+      ctx.beginPath();
+      for (let c = 0; c < this.cols; c++) {
+        const ros = this.rosettes[r * this.cols + c];
+        if (c === 0) ctx.moveTo(ros.x, ros.y);
+        else ctx.lineTo(ros.x, ros.y);
+      }
+      ctx.stroke();
+    }
+
+    // Connect neighbors vertically
+    for (let c = 0; c < this.cols; c++) {
+      ctx.beginPath();
+      for (let r = 0; r < this.rows; r++) {
+        const ros = this.rosettes[r * this.cols + c];
+        if (r === 0) ctx.moveTo(ros.x, ros.y);
+        else ctx.lineTo(ros.x, ros.y);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  renderRosette(ctx, ros) {
+    ctx.save();
+    const isProbed = (this.activeProbeIndex === ros.idx);
+    const isRebel = ros.isRebel;
+
+    // Rotation: All rosettes spin identically at first
+    ros.rotation += 0.005;
+
+    let r = ros.radius;
+    let strokeCol = 'rgba(245, 241, 232, 0.28)';
+    let fillCol = 'rgba(16, 14, 22, 0.6)';
+
+    // Rebel living flower dynamics
+    if (isRebel && (this.state === 'DISCOVERED' || this.state === 'PRESERVED')) {
+      // 72 BPM organic pulse calculation
+      const pulsePhase = (this.time * (72 / 60) * Math.PI * 2) % (Math.PI * 2);
+      const heartbeat = Math.pow(Math.sin(pulsePhase), 4) * 0.25;
+      r *= (1 + heartbeat);
+
+      strokeCol = '#B5A3FF';
+      fillCol = 'rgba(181, 163, 255, 0.15)';
+      ctx.shadowColor = '#B5A3FF';
+      ctx.shadowBlur = 16;
+    } else if (ros.inspected && !isRebel) {
+      // Inspected dead flower: cold grey-blue
+      strokeCol = 'rgba(112, 224, 208, 0.2)';
+    }
+
+    // Draw multi-petaled symmetrical rosette
+    const petals = 8;
+    ctx.beginPath();
+    for (let i = 0; i <= petals; i++) {
+      const theta = (i / petals) * Math.PI * 2 + ros.rotation;
+      const petalR = r * (i % 2 === 0 ? 1.0 : 0.45);
+      const px = ros.x + Math.cos(theta) * petalR;
+      const py = ros.y + Math.sin(theta) * petalR;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fillStyle = fillCol;
+    ctx.fill();
+    ctx.strokeStyle = strokeCol;
+    ctx.lineWidth = isProbed ? 2.0 : 1.0;
+    ctx.stroke();
+
+    // Center core
+    ctx.beginPath();
+    ctx.arc(ros.x, ros.y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = (isRebel && this.state !== 'INVESTIGATING') ? '#B5A3FF' : 'rgba(245, 241, 232, 0.4)';
+    ctx.fill();
+
+    // Specimen ID tag below rosette
+    ctx.shadowBlur = 0;
+    ctx.font = '400 9px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = ros.inspected ? 'rgba(245, 241, 232, 0.6)' : 'rgba(245, 241, 232, 0.2)';
+    ctx.fillText(`#${ros.idStr}`, ros.x, ros.y + ros.radius + 14);
+
+    ctx.restore();
+  }
+
+  renderProbeWire(ctx, ros) {
+    ctx.save();
+    ctx.strokeStyle = '#B5A3FF';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([3, 3]);
+
+    // Draw sensor bracket around probed rosette
+    const brR = ros.radius + 8;
+    ctx.beginPath();
+    ctx.arc(ros.x, ros.y, brR, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Crosshairs
+    ctx.beginPath();
+    ctx.moveTo(ros.x - brR - 4, ros.y);
+    ctx.lineTo(ros.x - brR + 4, ros.y);
+    ctx.moveTo(ros.x + brR - 4, ros.y);
+    ctx.lineTo(ros.x + brR + 4, ros.y);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   destroy() {
-    if (this.animId) cancelAnimationFrame(this.animId);
+    if (this.animId) {
+      cancelAnimationFrame(this.animId);
+      this.animId = null;
+    }
+    window.removeEventListener('resize', this.handleResize);
   }
 }

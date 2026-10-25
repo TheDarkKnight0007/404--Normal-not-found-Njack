@@ -2,5 +2,7 @@
   "name": "The Museum of Incorrect Physics",
   "description": "An immersive interactive museum experience where physical laws are unnaturally perfect, exploring what is lost when unpredictability ceases to exist.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

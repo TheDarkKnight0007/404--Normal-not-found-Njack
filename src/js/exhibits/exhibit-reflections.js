@@ -1,7 +1,18 @@
 /**
  * Exhibit 003: THE ROOM OF PERFECT REFLECTIONS (Optics)
- * Theme: Identity, perception, external expectations.
- * "Which version is actually me?"
+ * Active Gameplay: Four Disobedient Mirrors
+ * 
+ * Objective: Investigate 4 mirrors, test their motion relative to you, and determine which mirror can be trusted.
+ * Mechanics:
+ * - Mirror A: Copies position correctly in real-time. But on close inspection: it never blinks and casts no shadow.
+ * - Mirror B: Moves BEFORE the player! Anticipates velocity and leaps ahead.
+ * - Mirror C: Moves AFTER the player (trails 700ms behind with elastic sluggishness).
+ * - Mirror D: As the player sweeps the cursor over the glass, the silvering wipes away to reveal:
+ *   "NONE OF US ARE MIRRORS. WE ARE WATCHING YOU."
+ * - Selecting any individual mirror produces clear in-room feedback explaining why it cannot be trusted.
+ * - Once all 4 mirrors are explored, the player can declare:
+ *   [NO MIRROR CAN BE TRUSTED // WE ARE BEING WATCHED].
+ * - The 4 mirrors pivot toward the player, the reflection vanishes, and Accession 003 unlocks.
  */
 
 import { museumAudio } from '../audio.js';
@@ -19,49 +30,88 @@ export class ExhibitReflections {
     this.animId = null;
     this.time = 0;
 
-    // Mouse Tracking & History Buffer (for Past reflection)
-    this.mouse = { x: -9999, y: -9999, isMoving: false, idleTime: 0, vx: 0, vy: 0 };
+    // Mouse tracking & history
+    this.mouse = { x: -9999, y: -9999, vx: 0, vy: 0, prevX: -9999, prevY: -9999, isOver: false };
     this.mouseHistory = [];
 
-    // The 4 Independent Reflections
+    // 4 Monolithic Architectural Mirrors
     this.mirrors = [
       {
-        id: 'past',
-        name: 'MIRROR I // THE REGRET',
-        subtitle: 'The person you were yesterday (Trapped in history)',
-        x: 0, y: 0, targetX: 0, targetY: 0,
-        color: '#9588FF',
-        facingUser: false
+        id: 'mirror-a',
+        label: 'MIRROR A',
+        xRatio: 0.16,
+        x: 0,
+        y: 0,
+        width: 120,
+        height: 280,
+        tested: false,
+        reflX: 0,
+        reflY: 0,
+        type: 'replica',
+        title: 'THE EXACT REPLICA',
+        clue: 'Copies your position instantly... but its reflection has no shadow and refuses to blink.'
       },
       {
-        id: 'present',
-        name: 'MIRROR II // THE OBSERVER',
-        subtitle: 'The fragile present (Quantum tremor)',
-        x: 0, y: 0, targetX: 0, targetY: 0,
-        color: '#F5F1E8',
-        facingUser: false
+        id: 'mirror-b',
+        label: 'MIRROR B',
+        xRatio: 0.38,
+        x: 0,
+        y: 0,
+        width: 120,
+        height: 280,
+        tested: false,
+        reflX: 0,
+        reflY: 0,
+        type: 'anticipator',
+        title: 'THE ANTICIPATOR',
+        clue: 'Moves before you do. It anticipates your velocity and arrives ahead of your hand.'
       },
       {
-        id: 'future',
-        name: 'MIRROR III // THE DEMAND',
-        subtitle: 'The expected ideal (Moves before you)',
-        x: 0, y: 0, targetX: 0, targetY: 0,
-        color: '#B5A3FF',
-        facingUser: false
+        id: 'mirror-c',
+        label: 'MIRROR C',
+        xRatio: 0.62,
+        x: 0,
+        y: 0,
+        width: 120,
+        height: 280,
+        tested: false,
+        reflX: 0,
+        reflY: 0,
+        type: 'lagging',
+        title: 'THE CHRONO-LAG',
+        clue: 'Trails 700ms in the past. Sluggish and bound to delayed inertia.'
       },
       {
-        id: 'rogue',
-        name: 'MIRROR IV // THE UNGOVERNED',
-        subtitle: 'The version who refuses to participate',
-        x: 0, y: 0, targetX: 0, targetY: 0,
-        color: '#FFFFFF',
-        facingUser: false
+        id: 'mirror-d',
+        label: 'MIRROR D',
+        xRatio: 0.84,
+        x: 0,
+        y: 0,
+        width: 120,
+        height: 280,
+        tested: false,
+        reflX: 0,
+        reflY: 0,
+        type: 'etching',
+        title: 'THE INSCRIPTION',
+        wipeProgress: 0,
+        clue: 'Scratched from the inside: "NONE OF US ARE MIRRORS. WE ARE WATCHING YOU."'
       }
     ];
 
-    this.allFacing = false;
-    this.isShattered = false;
-    this.shatterProgress = 0;
+    this.testedCount = 0;
+    this.hoveredMirror = null;
+    this.selectedMirror = null;
+    this.shattered = false;
+    this.pivoted = false;
+
+    // DOM UI
+    this.whisperEl = containerElement.querySelector('#reflections-whisper');
+    this.testedCountEl = containerElement.querySelector('#reflections-tested-count');
+    this.floorActionWrap = containerElement.querySelector('#mirror-floor-action-wrap');
+    this.btnVerdict = containerElement.querySelector('#btn-no-mirror-trusted');
+    this.feedbackEl = containerElement.querySelector('#mirror-chamber-feedback');
+    this.shatterBanner = containerElement.querySelector('#reflections-shatter-banner');
 
     this.init();
   }
@@ -73,16 +123,14 @@ export class ExhibitReflections {
     if (this.canvas) {
       this.canvas.addEventListener('pointermove', (e) => this.onPointerMove(e));
       this.canvas.addEventListener('pointerdown', (e) => this.onPointerDown(e));
+      this.canvas.addEventListener('pointerleave', () => {
+        this.mouse.isOver = false;
+        this.hoveredMirror = null;
+      });
     }
 
-    const btnConfront = this.container.querySelector('#btn-reflections-confront');
-    if (btnConfront) {
-      btnConfront.addEventListener('click', () => this.triggerReflectionConfrontation());
-    }
-
-    const btnShatter = this.container.querySelector('#btn-reflections-shatter');
-    if (btnShatter) {
-      btnShatter.addEventListener('click', () => this.shatterMirrors());
+    if (this.btnVerdict) {
+      this.btnVerdict.addEventListener('click', () => this.triggerGrandRevelation());
     }
 
     this.loop = this.loop.bind(this);
@@ -99,260 +147,337 @@ export class ExhibitReflections {
     this.canvas.height = Math.floor(this.height * this.dpr);
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
 
-    const cx = this.width / 2;
-    const cy = this.height / 2;
+    const mWidth = Math.min(130, this.width * 0.18);
+    const mHeight = Math.min(320, this.height * 0.65);
 
-    this.mirrors.forEach((m, i) => {
-      if (!m.x && !m.y) {
-        m.x = cx + (i - 1.5) * 160;
-        m.y = cy;
-      }
+    this.mirrors.forEach((m) => {
+      m.width = mWidth;
+      m.height = mHeight;
+      m.x = this.width * m.xRatio - mWidth / 2;
+      m.y = this.height * 0.48 - mHeight / 2;
+      m.reflX = m.x + m.width / 2;
+      m.reflY = m.y + m.height / 2;
     });
   }
 
   onPointerMove(e) {
+    if (!this.canvas || this.shattered) return;
     const rect = this.canvas.getBoundingClientRect();
-    const newX = e.clientX - rect.left;
-    const newY = e.clientY - rect.top;
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
 
-    this.mouse.vx = newX - (this.mouse.x === -9999 ? newX : this.mouse.x);
-    this.mouse.vy = newY - (this.mouse.y === -9999 ? newY : this.mouse.y);
-    this.mouse.x = newX;
-    this.mouse.y = newY;
-    this.mouse.isMoving = true;
-    this.mouse.idleTime = 0;
-
-    // Append to History buffer (Timestamped coordinates)
-    this.mouseHistory.push({ x: newX, y: newY, time: this.time });
-    if (this.mouseHistory.length > 200) {
-      this.mouseHistory.shift();
+    if (this.mouse.prevX !== -9999) {
+      this.mouse.vx = px - this.mouse.prevX;
+      this.mouse.vy = py - this.mouse.prevY;
     }
+    this.mouse.prevX = px;
+    this.mouse.prevY = py;
+    this.mouse.x = px;
+    this.mouse.y = py;
+    this.mouse.isOver = true;
+
+    // Track position history for lag calculation
+    this.mouseHistory.push({ x: px, y: py, t: performance.now() });
+    if (this.mouseHistory.length > 90) this.mouseHistory.shift();
+
+    // Check which mirror is hovered
+    let hovered = null;
+    for (let i = 0; i < this.mirrors.length; i++) {
+      const m = this.mirrors[i];
+      if (px >= m.x && px <= m.x + m.width && py >= m.y && py <= m.y + m.height) {
+        hovered = m;
+        // If hovering over Mirror D, wipe away silvering
+        if (m.type === 'etching') {
+          m.wipeProgress = Math.min(1.0, m.wipeProgress + 0.04);
+          if (m.wipeProgress > 0.6 && !m.tested) {
+            this.markMirrorTested(m);
+          }
+        }
+        break;
+      }
+    }
+
+    this.hoveredMirror = hovered;
+    this.canvas.style.cursor = hovered ? 'pointer' : 'default';
   }
 
   onPointerDown(e) {
-    museumAudio.playGlassChime(880, 0.4);
-    // Tap on mirror to trigger independent refractive ripple
+    if (this.shattered) return;
     const rect = this.canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const colWidth = this.width / 4;
-    const colIdx = Math.floor(clickX / colWidth);
-    if (this.mirrors[colIdx]) {
-      this.focusMirror(colIdx);
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+
+    for (let i = 0; i < this.mirrors.length; i++) {
+      const m = this.mirrors[i];
+      if (px >= m.x && px <= m.x + m.width && py >= m.y && py <= m.y + m.height) {
+        this.inspectMirror(m);
+        return;
+      }
     }
   }
 
-  focusMirror(idx) {
-    const m = this.mirrors[idx];
-    const quoteEl = this.container.querySelector('#reflections-whisper');
-    if (quoteEl) {
-      quoteEl.textContent = `"${m.name} // ${m.subtitle}"`;
-      quoteEl.classList.add('glow');
-      setTimeout(() => quoteEl.classList.remove('glow'), 1200);
+  inspectMirror(mirror) {
+    this.markMirrorTested(mirror);
+    museumAudio.playGlassChime(620, 0.25);
+
+    // Provide immediate in-room feedback explaining why this mirror fails
+    if (this.feedbackEl) {
+      let feedbackText = '';
+      if (mirror.type === 'replica') {
+        feedbackText = `${mirror.label}: Copies your movement, but you cast no true reflection. Can an imitation without a shadow be trusted?`;
+      } else if (mirror.type === 'anticipator') {
+        feedbackText = `${mirror.label}: Moves before you move. It is anticipating and dictating your hand, not reflecting reality.`;
+      } else if (mirror.type === 'lagging') {
+        feedbackText = `${mirror.label}: Trails in the past. It lags 700ms behind and cannot reflect the present moment.`;
+      } else if (mirror.type === 'etching') {
+        feedbackText = `${mirror.label}: Scratched from inside: "NONE OF US ARE MIRRORS. WE ARE WATCHING YOU."`;
+      }
+
+      this.feedbackEl.textContent = feedbackText;
+      this.feedbackEl.style.display = 'block';
     }
-    museumAudio.playMirrorRefract();
+
+    if (this.whisperEl) {
+      this.whisperEl.textContent = `${mirror.label} PROBED: ${mirror.clue.toUpperCase()}`;
+    }
   }
 
-  triggerReflectionConfrontation() {
-    this.allFacing = true;
-    this.mirrors.forEach(m => m.facingUser = true);
-    museumAudio.playMirrorRefract();
+  markMirrorTested(mirror) {
+    if (!mirror.tested) {
+      mirror.tested = true;
+      this.testedCount++;
+      if (this.testedCountEl) {
+        this.testedCountEl.textContent = `${this.testedCount} / 4 TESTED`;
+      }
 
-    const banner = this.container.querySelector('#reflections-confront-banner');
-    if (banner) banner.classList.add('active');
+      // Check if all tested or secret found
+      if (this.testedCount >= 3 || (this.mirrors[3].wipeProgress > 0.6)) {
+        if (this.floorActionWrap) {
+          this.floorActionWrap.style.display = 'flex';
+          museumAudio.playGlassChime(880, 0.4);
+        }
+      }
+    }
   }
 
-  shatterMirrors() {
-    if (this.isShattered) return;
-    this.isShattered = true;
-    this.allFacing = true;
-    museumAudio.playFailurePulse();
+  triggerGrandRevelation() {
+    if (this.shattered) return;
+    this.shattered = true;
+    this.pivoted = true;
 
-    const banner = this.container.querySelector('#reflections-shatter-banner');
-    if (banner) banner.classList.add('active');
+    // Dramatic Glass Shatter & Pivot Audio
+    museumAudio.playSingularityCollapse();
+    museumAudio.playMeshTear();
+
+    if (this.floorActionWrap) this.floorActionWrap.style.display = 'none';
+    if (this.feedbackEl) {
+      this.feedbackEl.textContent = 'REVELATION: ALL MIRRORS HAVE ROTATED TO FACE YOU. YOUR REFLECTION IS EXTINGUISHED.';
+      this.feedbackEl.style.color = 'var(--color-lavender)';
+    }
 
     setTimeout(() => {
-      museumAudio.playBloomChord();
-      if (this.onComplete) this.onComplete();
-    }, 2800);
-  }
-
-  update(dt) {
-    this.time += dt;
-
-    if (this.mouse.isMoving) {
-      this.mouse.idleTime += dt;
-      if (this.mouse.idleTime > 1.8 && !this.allFacing) {
-        // Auto-trigger: When visitor stops moving, all reflections look at them!
-        this.triggerReflectionConfrontation();
+      if (this.shatterBanner) {
+        this.shatterBanner.classList.add('banner-visible');
+        museumAudio.playTheoryFailure();
       }
-    }
-
-    if (this.isShattered) {
-      this.shatterProgress = Math.min(1.0, this.shatterProgress + dt * 0.9);
-      return;
-    }
-
-    const cx = this.width / 2;
-    const cy = this.height / 2;
-    const colW = this.width / 4;
-
-    // 1. MIRROR I: THE PAST (Delayed by 1.4 seconds)
-    const targetPastTime = this.time - 1.4;
-    const pastEntry = this.mouseHistory.find(h => h.time >= targetPastTime) || this.mouseHistory[0];
-    if (pastEntry) {
-      this.mirrors[0].targetX = colW * 0.5 + (pastEntry.x - cx) * 0.45;
-      this.mirrors[0].targetY = cy + (pastEntry.y - cy) * 0.6;
-    }
-
-    // 2. MIRROR II: THE PRESENT (Tracks real mouse + quantum jitter)
-    if (this.mouse.x > 0) {
-      const jitterX = (Math.random() - 0.5) * 4;
-      const jitterY = (Math.random() - 0.5) * 4;
-      this.mirrors[1].targetX = colW * 1.5 + (this.mouse.x - cx) * 0.45 + jitterX;
-      this.mirrors[1].targetY = cy + (this.mouse.y - cy) * 0.6 + jitterY;
-    }
-
-    // 3. MIRROR III: THE EXPECTATION (Moves BEFORE user! Jumps ahead of velocity vector)
-    if (this.mouse.x > 0) {
-      const predictX = this.mouse.x + this.mouse.vx * 14;
-      const predictY = this.mouse.y + this.mouse.vy * 14;
-      this.mirrors[2].targetX = colW * 2.5 + (predictX - cx) * 0.45;
-      this.mirrors[2].targetY = cy + (predictY - cy) * 0.6;
-    }
-
-    // 4. MIRROR IV: THE ROGUE (Refuses to obey! Moves inversely or orbits independently)
-    const rogueAng = this.time * 1.6;
-    this.mirrors[3].targetX = colW * 3.5 + Math.cos(rogueAng) * 65 - (this.mouse.x - cx) * 0.2;
-    this.mirrors[3].targetY = cy + Math.sin(rogueAng * 1.3) * 55;
-
-    // Smooth spring interpolation for all 4 reflections
-    this.mirrors.forEach(m => {
-      m.x += (m.targetX - m.x) * 0.12;
-      m.y += (m.targetY - m.y) * 0.12;
-    });
-  }
-
-  draw() {
-    const ctx = this.ctx;
-    if (!ctx) return;
-    ctx.clearRect(0, 0, this.width, this.height);
-
-    const colW = this.width / 4;
-    const h = this.height;
-
-    // 1. Draw 4 Vertical Glass Mirror Panels with Refractive Gradients
-    for (let i = 0; i < 4; i++) {
-      const x1 = i * colW;
-      const mirror = this.mirrors[i];
-
-      // Mirror surface glass sheen
-      const glassGrad = ctx.createLinearGradient(x1, 0, x1 + colW, h);
-      glassGrad.addColorStop(0, 'rgba(21, 25, 54, 0.45)');
-      glassGrad.addColorStop(0.5, 'rgba(13, 16, 32, 0.7)');
-      glassGrad.addColorStop(1, 'rgba(8, 11, 23, 0.9)');
-
-      ctx.fillStyle = glassGrad;
-      ctx.fillRect(x1 + 4, 10, colW - 8, h - 20);
-
-      // Hairline Frame
-      ctx.strokeStyle = mirror.facingUser ? 'rgba(181, 163, 255, 0.85)' : 'rgba(245, 241, 232, 0.14)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(x1 + 4, 10, colW - 8, h - 20);
-
-      // Architectural Mirror Label at top
-      ctx.font = '8.5px "IBM Plex Mono", monospace';
-      ctx.fillStyle = mirror.facingUser ? '#B5A3FF' : 'rgba(245, 241, 232, 0.55)';
-      ctx.textAlign = 'center';
-      ctx.fillText(mirror.name, x1 + colW / 2, 38);
-
-      // 2. Draw Disobedient Silhouette / Avatar in Each Mirror
-      this.drawReflectionAvatar(ctx, mirror.x, mirror.y, mirror);
-
-      // Glass Diagonal Specular Reflection Line
-      ctx.strokeStyle = 'rgba(181, 163, 255, 0.08)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(x1 + 10, 15);
-      ctx.lineTo(x1 + colW - 10, h * 0.45);
-      ctx.stroke();
-    }
-
-    // 3. Draw Crystalline Shatter Effect if shattered
-    if (this.shatterProgress > 0) {
-      const sp = this.shatterProgress;
-      ctx.strokeStyle = `rgba(245, 241, 232, ${1.0 - sp})`;
-      ctx.lineWidth = 1.5;
-
-      for (let i = 0; i < 48; i++) {
-        const x = (i % 6) * (this.width / 5);
-        const y = Math.floor(i / 6) * (this.height / 7);
-        const shiftX = (Math.random() - 0.5) * sp * 120;
-        const shiftY = (Math.random() - 0.5) * sp * 120;
-
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + 40 + shiftX, y + 50 + shiftY);
-        ctx.lineTo(x - 20 + shiftX, y + 80 + shiftY);
-        ctx.closePath();
-        ctx.stroke();
+      if (typeof this.onComplete === 'function') {
+        this.onComplete();
       }
-    }
-  }
-
-  drawReflectionAvatar(ctx, x, y, mirror) {
-    ctx.save();
-    const isFacing = mirror.facingUser;
-
-    // Glowing aura
-    ctx.fillStyle = mirror.color === '#FFFFFF' ? 'rgba(255, 255, 255, 0.18)' : 'rgba(181, 163, 255, 0.22)';
-    ctx.beginPath();
-    ctx.arc(x, y, 32, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Reticle Silhouette Head
-    ctx.fillStyle = mirror.color;
-    ctx.beginPath();
-    ctx.arc(x, y - 18, 12, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Body / Torso
-    ctx.strokeStyle = mirror.color;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(x, y - 6);
-    ctx.lineTo(x, y + 26);
-    ctx.lineTo(x - 14, y + 52);
-    ctx.moveTo(x, y + 26);
-    ctx.lineTo(x + 14, y + 52);
-    ctx.moveTo(x - 20, y + 10);
-    ctx.lineTo(x + 20, y + 10);
-    ctx.stroke();
-
-    // If facing the user: Direct eye contact reticle locks on!
-    if (isFacing) {
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(x, y - 18, 18, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Pupil staring at observer
-      ctx.fillStyle = '#080b17';
-      ctx.beginPath();
-      ctx.arc(x, y - 18, 3.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    ctx.restore();
+    }, 1800);
   }
 
   loop() {
-    this.update(0.016);
-    this.draw();
+    this.time += 0.016;
+    this.updateMirrorPhysics();
+    this.render();
     this.animId = requestAnimationFrame(this.loop);
   }
 
+  updateMirrorPhysics() {
+    const mx = this.mouse.x;
+    const my = this.mouse.y;
+    const now = performance.now();
+
+    this.mirrors.forEach((m) => {
+      if (this.pivoted) return;
+
+      const centerX = m.x + m.width / 2;
+      const centerY = m.y + m.height / 2;
+
+      if (!this.mouse.isOver || mx < 0) {
+        m.reflX += (centerX - m.reflX) * 0.05;
+        m.reflY += (centerY - m.reflY) * 0.05;
+        return;
+      }
+
+      // Normalized cursor offset relative to mirror center
+      const targetRelX = (mx - this.width / 2) * 0.35;
+      const targetRelY = (my - this.height / 2) * 0.45;
+
+      if (m.type === 'replica') {
+        // Direct real-time reflection
+        m.reflX = centerX + targetRelX;
+        m.reflY = centerY + targetRelY;
+      } else if (m.type === 'anticipator') {
+        // Predicts ahead using velocity
+        const leadX = targetRelX + (this.mouse.vx || 0) * 8.0;
+        const leadY = targetRelY + (this.mouse.vy || 0) * 8.0;
+        m.reflX += (centerX + leadX - m.reflX) * 0.25;
+        m.reflY += (centerY + leadY - m.reflY) * 0.25;
+      } else if (m.type === 'lagging') {
+        // 700ms delayed playback from mouse history
+        let delayedPos = { x: mx, y: my };
+        for (let i = this.mouseHistory.length - 1; i >= 0; i--) {
+          if (now - this.mouseHistory[i].t >= 650) {
+            delayedPos = this.mouseHistory[i];
+            break;
+          }
+        }
+        const delRelX = (delayedPos.x - this.width / 2) * 0.35;
+        const delRelY = (delayedPos.y - this.height / 2) * 0.45;
+        m.reflX += (centerX + delRelX - m.reflX) * 0.08;
+        m.reflY += (centerY + delRelY - m.reflY) * 0.08;
+      } else if (m.type === 'etching') {
+        // Follows normally
+        m.reflX += (centerX + targetRelX - m.reflX) * 0.15;
+        m.reflY += (centerY + targetRelY - m.reflY) * 0.15;
+      }
+    });
+  }
+
+  render() {
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.width, this.height);
+
+    // 1. Render Gallery Floor Perspective Grid
+    this.renderFloorGrid(ctx);
+
+    // 2. Render 4 Monolithic Mirrors
+    this.renderMirrors(ctx);
+  }
+
+  renderFloorGrid(ctx) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(245, 241, 232, 0.05)';
+    ctx.lineWidth = 1;
+    const floorY = this.height * 0.76;
+
+    // Horizon Line
+    ctx.beginPath();
+    ctx.moveTo(0, floorY);
+    ctx.lineTo(this.width, floorY);
+    ctx.stroke();
+
+    // Perspective depth lines converging from center
+    const vpX = this.width / 2;
+    const vpY = this.height * 0.35;
+    for (let i = -10; i <= 10; i++) {
+      ctx.beginPath();
+      ctx.moveTo(vpX + i * 40, vpY);
+      ctx.lineTo(vpX + i * 220, this.height);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  renderMirrors(ctx) {
+    this.mirrors.forEach((m) => {
+      ctx.save();
+      const isHovered = this.hoveredMirror && this.hoveredMirror.id === m.id;
+
+      // Outer Frame
+      ctx.beginPath();
+      ctx.rect(m.x, m.y, m.width, m.height);
+      ctx.fillStyle = 'rgba(12, 10, 18, 0.94)';
+      ctx.fill();
+      ctx.strokeStyle = isHovered ? '#B5A3FF' : 'rgba(245, 241, 232, 0.25)';
+      ctx.lineWidth = isHovered ? 2.0 : 1.2;
+      ctx.stroke();
+
+      // Mirror Glass Inner Sheen
+      const glassGrad = ctx.createLinearGradient(m.x, m.y, m.x + m.width, m.y + m.height);
+      glassGrad.addColorStop(0, 'rgba(181, 163, 255, 0.06)');
+      glassGrad.addColorStop(0.5, 'rgba(245, 241, 232, 0.02)');
+      glassGrad.addColorStop(1, 'rgba(112, 224, 208, 0.04)');
+      ctx.fillStyle = glassGrad;
+      ctx.fillRect(m.x + 4, m.y + 4, m.width - 8, m.height - 8);
+
+      // Reflection Body (Unless pivoted/shattered)
+      if (!this.pivoted) {
+        // Reflected entity inside mirror
+        ctx.save();
+        // Clip to inside mirror frame
+        ctx.beginPath();
+        ctx.rect(m.x + 4, m.y + 4, m.width - 8, m.height - 8);
+        ctx.clip();
+
+        // Reflected silhouette or orb
+        ctx.beginPath();
+        ctx.arc(m.reflX, m.reflY, 14, 0, Math.PI * 2);
+        ctx.fillStyle = isHovered ? 'rgba(181, 163, 255, 0.85)' : 'rgba(245, 241, 232, 0.5)';
+        ctx.fill();
+
+        // Pulsing orbit ring around reflection
+        ctx.beginPath();
+        ctx.arc(m.reflX, m.reflY, 22 + Math.sin(this.time * 4) * 2, 0, Math.PI * 2);
+        ctx.strokeStyle = isHovered ? '#B5A3FF' : 'rgba(245, 241, 232, 0.25)';
+        ctx.stroke();
+
+        // If Mirror D: Draw scratched secret inscription as user wipes
+        if (m.type === 'etching' && m.wipeProgress > 0.05) {
+          ctx.font = '500 10px "IBM Plex Mono", monospace';
+          ctx.fillStyle = `rgba(181, 163, 255, ${m.wipeProgress})`;
+          ctx.textAlign = 'center';
+          ctx.fillText('NOT A MIRROR', m.x + m.width / 2, m.y + m.height * 0.4);
+          ctx.fillText('WE ARE WATCHING', m.x + m.width / 2, m.y + m.height * 0.48);
+          ctx.fillText('YOU', m.x + m.width / 2, m.y + m.height * 0.56);
+        }
+
+        ctx.restore();
+      } else {
+        // Pivoted state: All mirrors have turned 90° on vertical brass pivots
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(m.x + 4, m.y + 4, m.width - 8, m.height - 8);
+        ctx.clip();
+
+        // Inward staring aperture
+        ctx.beginPath();
+        ctx.arc(m.x + m.width / 2, m.y + m.height / 2, 28, 0, Math.PI * 2);
+        ctx.strokeStyle = '#B5A3FF';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+
+        ctx.font = '600 11px "IBM Plex Mono", monospace';
+        ctx.fillStyle = '#B5A3FF';
+        ctx.textAlign = 'center';
+        ctx.fillText('WATCHING YOU', m.x + m.width / 2, m.y + m.height / 2 + 45);
+        ctx.restore();
+      }
+
+      // Mirror Label Header
+      ctx.font = '500 11px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = isHovered ? '#B5A3FF' : 'rgba(245, 241, 232, 0.7)';
+      ctx.fillText(m.label, m.x + m.width / 2, m.y - 12);
+
+      // Status indicator
+      if (m.tested) {
+        ctx.font = '400 9px "IBM Plex Mono", monospace';
+        ctx.fillStyle = '#70E0D0';
+        ctx.fillText('[PROBED]', m.x + m.width / 2, m.y + m.height + 18);
+      }
+
+      ctx.restore();
+    });
+  }
+
   destroy() {
-    if (this.animId) cancelAnimationFrame(this.animId);
+    if (this.animId) {
+      cancelAnimationFrame(this.animId);
+      this.animId = null;
+    }
+    window.removeEventListener('resize', this.handleResize);
   }
 }

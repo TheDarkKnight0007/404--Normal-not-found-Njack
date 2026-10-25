@@ -15,6 +15,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
 
+    <!-- Museum Impossible Orbit Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Cpath d='M16 3C23.18 3 29 8.82 29 16C29 23.18 23.18 29 16 29C9.5 29 4.2 24.3 3.2 18C2.5 13.5 5.5 8 10 5.5C13.5 3.5 17.5 5 19 8C20.8 11.5 19 16 15 18C11.5 19.8 8 18 7 15' stroke='%23B5A3FF' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%23F5F1E8'/%3E%3Ccircle cx='21' cy='9' r='1.5' fill='%23B5A3FF'/%3E%3C/svg%3E" />
+
     <!-- Museum Vanilla Stylesheet -->
     <link rel="stylesheet" href="/src/css/style.css" />
   </head>
@@ -27,10 +30,6 @@
     <div class="film-grain" aria-hidden="true"></div>
     <div class="lens-vignette" aria-hidden="true"></div>
 
-    <!-- Perimeter Architectural Registration Marks (Revealed only after reality failure) -->
-    <div class="arch-mark am-tl" aria-hidden="true">EXHIBIT 000 // SPACETIME FABRIC</div>
-    <div class="arch-mark am-br" aria-hidden="true">CAUSALITY DISTORTION // REPULSIVE GRAVITY</div>
-
     <!-- Custom Reticle Cursor -->
     <div id="curatorial-cursor" aria-hidden="true"></div>
     <div id="curatorial-cursor-dot" aria-hidden="true"></div>
@@ -38,7 +37,28 @@
     <!-- Persistent HUD (Hidden during opening film scenes) -->
     <aside class="cinematic-hud" aria-label="Observation HUD">
       <div class="hud-top-bar">
-        <span>EXHIBIT 000 // SPACETIME FABRIC</span>
+        <div class="hud-brand-wrap">
+          <div class="museum-logo-mark" aria-hidden="true">
+            <svg class="museum-mark-svg" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 16 3 C 23.18 3 29 8.82 29 16 C 29 23.18 23.18 29 16 29 C 9.5 29 4.2 24.3 3.2 18 C 2.5 13.5 5.5 8 10 5.5 C 13.5 3.5 17.5 5 19 8 C 20.8 11.5 19 16 15 18 C 11.5 19.8 8 18 7 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+              <circle cx="21" cy="9" r="1.2" fill="#B5A3FF"/>
+              <line x1="16" y1="1" x2="16" y2="4" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+              <line x1="1" y1="16" x2="4" y2="16" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+            </svg>
+          </div>
+          <span id="hud-current-vault-label" class="hud-vault-title">THE MUSEUM OF INCORRECT PHYSICS</span>
+        </div>
+
+        <nav class="hud-vault-nav" aria-label="Vault Index">
+          <button class="vault-pill active" data-vault="threshold" type="button" title="Threshold [0]">00. VITRINE</button>
+          <button class="vault-pill" data-vault="vault-1" type="button" title="Exhibit 001: Gravity [1]">01. GRAVITY</button>
+          <button class="vault-pill" data-vault="vault-2" type="button" title="Exhibit 002: Time [2]">02. TIME</button>
+          <button class="vault-pill" data-vault="vault-3" type="button" title="Exhibit 003: Optics [3]">03. OPTICS</button>
+          <button class="vault-pill" data-vault="vault-4" type="button" title="Exhibit 004: Symmetry [4]">04. SYMMETRY</button>
+          <button class="vault-pill" data-vault="archive" type="button" title="Curatorial Archive [A]">ARCHIVE</button>
+        </nav>
+
         <div class="hud-actions">
           <button id="btn-audio-toggle" class="hud-btn" type="button" aria-label="Toggle procedural audio">
             AUDIO: OPERATIONAL
@@ -65,9 +85,14 @@
         <!-- Left Editorial Monograph -->
         <article class="threshold-editorial">
           <div class="threshold-kicker">
-            <span>THRESHOLD PROTOCOL</span>
-            <span class="threshold-rule" aria-hidden="true"></span>
-            <span>EXHIBIT 000 / ANOMALY VITRINE</span>
+            <span class="threshold-logo-mark" aria-hidden="true">
+              <svg class="museum-mark-svg-small" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 16 3 C 23.18 3 29 8.82 29 16 C 29 23.18 23.18 29 16 29 C 9.5 29 4.2 24.3 3.2 18 C 2.5 13.5 5.5 8 10 5.5 C 13.5 3.5 17.5 5 19 8 C 20.8 11.5 19 16 15 18 C 11.5 19.8 8 18 7 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+                <circle cx="21" cy="9" r="1.2" fill="#B5A3FF"/>
+              </svg>
+            </span>
+            <span>THRESHOLD PROTOCOL // ANOMALY VITRINE</span>
           </div>
 
           <h1 class="threshold-title" id="threshold-heading">
@@ -86,7 +111,7 @@
 
           <div class="threshold-prose">
             <p>A collection of phenomena that should not exist.</p>
-            <p style="margin-top: 0.6rem; color: var(--color-text-faint); font-size: 11px;">
+            <p class="threshold-note">
               Here, the fundamental constants were calibrated to absolute perfection. In curing the universe of friction, we severed its connection to time.
             </p>
           </div>
@@ -136,23 +161,625 @@
 
       </section>
 
+      <!-- EXHIBIT 001: THE WEIGHT OF INVISIBLE THINGS (GRAVITY) -->
+      <section class="vault-scene" id="scene-vault-1" aria-labelledby="v1-title">
+        <header class="vault-header">
+          <div class="vault-meta">
+            <span class="vault-accession">ACCESSION // 001-GRV</span>
+            <span class="vault-sub-badge">INVESTIGATION: TRIANGULATION ACTIVE</span>
+          </div>
+          <h2 class="vault-title" id="v1-title">THE WEIGHT OF INVISIBLE THINGS</h2>
+          <p class="vault-subtitle">Drag the 3 field scanners around the chamber. Triangulate the invisible mass.</p>
+        </header>
+
+        <div class="vault-canvas-container">
+          <canvas id="gravity-canvas" class="vault-canvas"></canvas>
+          <div id="singularity-lock-ui" class="singularity-lock-ui" aria-hidden="true">
+            <div class="lock-reticle"></div>
+            <div class="lock-bracket lock-tl"></div>
+            <div class="lock-bracket lock-tr"></div>
+            <div class="lock-bracket lock-bl"></div>
+            <div class="lock-bracket lock-br"></div>
+            <span class="lock-text">SINGULARITY LOCATED // CLICK CORE TO IMPLODE</span>
+          </div>
+        </div>
+
+        <aside class="vault-minimal-hud" aria-label="Gravimeter Telemetry">
+          <div class="hud-telemetry">
+            <span class="telemetry-label">FIELD SCANNERS</span>
+            <span class="telemetry-val" id="gravity-scanner-status">DRAG SCANNERS α, β, γ TO BEGIN TRIANGULATION</span>
+          </div>
+          <div class="hud-telemetry">
+            <span class="telemetry-label">TRIANGULATION LOCK</span>
+            <span class="telemetry-val highlight-purple" id="gravity-strain-display">TRIANGULATION: 0% · ALIGN SCANNERS</span>
+          </div>
+        </aside>
+
+        <!-- Singularity Fracture Resolution Banner -->
+        <div id="gravity-fracture-banner" class="vault-resolution-banner" role="status">
+          <div class="resolution-content">
+            <span class="resolution-tag">ACCESSION 001 // FORBIDDEN MASS LOCATED</span>
+            <h3 class="resolution-title">THE CELESTIAL BURDEN</h3>
+            <p class="resolution-text">The floor collapsed into the discovered singularity. You triangulated what instruments could not see.</p>
+            <button id="btn-to-vault-2" class="vault-advance-btn" type="button">
+              ADVANCE TO EXHIBIT 002: TIME →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXHIBIT 002: THE PENDULUM THAT NEVER ARRIVES (TIME) -->
+      <section class="vault-scene" id="scene-vault-2" aria-labelledby="v2-title">
+        <header class="vault-header">
+          <div class="vault-meta">
+            <span class="vault-accession">ACCESSION // 002-TMP</span>
+            <span class="vault-sub-badge">INVESTIGATION: 5 CONFLICTING CLOCKS</span>
+          </div>
+          <h2 class="vault-title" id="v2-title">THE PENDULUM THAT NEVER ARRIVES</h2>
+          <p class="vault-subtitle">Five clocks disagree. Which one tells real time?</p>
+        </header>
+
+        <div class="vault-canvas-container">
+          <canvas id="pendulum-canvas" class="vault-canvas"></canvas>
+
+          <!-- Interactive Chronometer Loupe / Examination Panel -->
+          <div id="clock-inspector-panel" class="clock-inspector-panel" style="display: none;">
+            <div class="inspector-header">
+              <span class="inspector-badge">INSPECTION LOUPE</span>
+              <span class="inspector-clock-id" id="insp-clock-id">CLOCK 01</span>
+              <button id="btn-close-clock-insp" class="btn-close-insp" type="button" aria-label="Close Inspector">✕</button>
+            </div>
+            <div class="inspector-body">
+              <div class="inspector-waveform" id="insp-waveform">
+                <span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span>
+              </div>
+              <p class="inspector-desc" id="insp-clock-desc">Click actions below to test this clock's escapement mechanism.</p>
+              <div class="inspector-actions">
+                <button id="btn-toggle-pause-clock" class="insp-action-btn" type="button">
+                  [PAUSE / RESUME CLOCK]
+                </button>
+                <button id="btn-log-clock-obs" class="insp-action-btn" type="button">
+                  [LOG OBSERVATION]
+                </button>
+                <button id="btn-declare-clock" class="insp-action-btn insp-action-primary" type="button">
+                  [DECLARE THIS CLOCK REALITY]
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wrong Clock Feedback Flash Alert -->
+          <div id="clock-feedback-alert" class="clock-feedback-alert" style="display: none;" role="alert">
+            <span class="feedback-icon">⚠</span>
+            <span class="feedback-text" id="clock-feedback-text">ERROR</span>
+          </div>
+
+          <!-- Field Observation Logbook (Docked bottom left) -->
+          <div id="clock-field-log" class="clock-field-log">
+            <div class="logbook-header">INVESTIGATOR'S CHRONOMETER LOG (<span id="log-count">0</span>/5)</div>
+            <ul class="logbook-entries" id="logbook-entries">
+              <li class="log-empty">Click a clock to inspect and log its behavior.</li>
+            </ul>
+          </div>
+        </div>
+
+        <aside class="vault-minimal-hud" aria-label="Chronometer Telemetry">
+          <div class="hud-telemetry">
+            <span class="telemetry-label">CHRONOMETER STATUS</span>
+            <span class="telemetry-val" id="pendulum-investigation-status">CLICK ANY CLOCK TO TEST AND RECORD OBSERVATIONS</span>
+          </div>
+          <div class="hud-telemetry">
+            <span class="telemetry-label">ZENO DILATION</span>
+            <span class="telemetry-val highlight-purple" id="pendulum-dilation-val">COMPLETION: 99.980% [UNREACHABLE]</span>
+          </div>
+        </aside>
+
+        <!-- Time Arrest Resolution Banner -->
+        <div id="pendulum-freeze-banner" class="vault-resolution-banner" role="status">
+          <div class="resolution-content">
+            <span class="resolution-tag">ACCESSION 002 // TEMPORAL EQUILIBRIUM COLLAPSED</span>
+            <h3 class="resolution-title">THE TRUE INVARIANT ANCHOR</h3>
+            <p class="resolution-text">You calibrated reality to the true clock. The asymptotic pendulum has reached its destination and paused in stillness. Time has forgiven arrival.</p>
+            <button id="btn-to-vault-3" class="vault-advance-btn" type="button">
+              ADVANCE TO EXHIBIT 003: OPTICS →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXHIBIT 003: THE ROOM OF PERFECT REFLECTIONS (OPTICS) -->
+      <section class="vault-scene" id="scene-vault-3" aria-labelledby="v3-title">
+        <header class="vault-header">
+          <div class="vault-meta">
+            <span class="vault-accession">ACCESSION // 003-OPT</span>
+            <span class="vault-sub-badge">INVESTIGATION: 4 DISOBEDIENT MIRRORS</span>
+          </div>
+          <h2 class="vault-title" id="v3-title">THE ROOM OF PERFECT REFLECTIONS</h2>
+          <p class="vault-subtitle">Four mirrors reflect you differently. Which mirror can be trusted?</p>
+        </header>
+
+        <div class="vault-canvas-container">
+          <canvas id="reflections-canvas" class="vault-canvas"></canvas>
+
+          <!-- In-Chamber Floor Revelation Action (Appears after testing mirrors) -->
+          <div id="mirror-floor-action-wrap" class="mirror-floor-action-wrap" style="display: none;">
+            <p class="mirror-floor-prompt" id="mirror-floor-prompt">All four reflections have been probed. Declare your verdict:</p>
+            <button id="btn-no-mirror-trusted" class="btn-mirror-verdict" type="button">
+              [NO MIRROR CAN BE TRUSTED // WE ARE BEING WATCHED]
+            </button>
+          </div>
+
+          <!-- Ephemeral In-Chamber Feedback Line (No Card UI) -->
+          <div id="mirror-chamber-feedback" class="mirror-chamber-feedback" style="display: none;"></div>
+        </div>
+
+        <aside class="vault-minimal-hud" aria-label="Optics Telemetry">
+          <div class="hud-telemetry">
+            <span class="telemetry-label">MIRROR INQUIRY</span>
+            <span class="telemetry-val" id="reflections-whisper">TEST ALL 4 MIRRORS // OBSERVE WHO LEADS AND WHO FOLLOWS</span>
+          </div>
+          <div class="hud-telemetry">
+            <span class="telemetry-label">TESTED MIRRORS</span>
+            <span class="telemetry-val highlight-purple" id="reflections-tested-count">0 / 4 TESTED</span>
+          </div>
+        </aside>
+
+        <!-- Shatter Resolution Banner -->
+        <div id="reflections-shatter-banner" class="vault-resolution-banner" role="status">
+          <div class="resolution-content">
+            <span class="resolution-tag">ACCESSION 003 // OPTICAL INVERSION UNMASKED</span>
+            <h3 class="resolution-title">THE OBSERVER INVERSION</h3>
+            <p class="resolution-text">No reflection was truthful. All four have turned to stare directly at you, and your reflection has ceased to exist. You were the exhibit all along.</p>
+            <button id="btn-to-vault-4" class="vault-advance-btn" type="button">
+              ADVANCE TO EXHIBIT 004: SYMMETRY →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXHIBIT 004: THE GARDEN OF EQUAL SHAPES (SYMMETRY) -->
+      <section class="vault-scene" id="scene-vault-4" aria-labelledby="v4-title">
+        <header class="vault-header">
+          <div class="vault-meta">
+            <span class="vault-accession">ACCESSION // 004-SYM</span>
+            <span class="vault-sub-badge">INVESTIGATION: BIOMETRIC SEARCH</span>
+          </div>
+          <h2 class="vault-title" id="v4-title">THE GARDEN OF EQUAL SHAPES</h2>
+          <p class="vault-subtitle">Find the flower that is actually alive.</p>
+        </header>
+
+        <div class="vault-canvas-container">
+          <canvas id="garden-canvas" class="vault-canvas"></canvas>
+
+          <!-- Interactive Stethoscope Diagnostic Readout -->
+          <div id="stethoscope-diagnostic-bar" class="stethoscope-diagnostic-bar">
+            <span class="steth-icon">🩺</span>
+            <span class="steth-label">BIOMETRIC SENSOR:</span>
+            <span class="steth-value" id="steth-sensor-readout">CLICK ANY FLOWER TO ATTACH PROBE // 36 SPECIMENS</span>
+          </div>
+
+          <!-- Moral Choice Overlay (Revealed upon finding the living flower) -->
+          <div id="garden-choice-overlay" class="garden-choice-overlay" style="display: none;" aria-hidden="true">
+            <div class="specimen-vital-card">
+              <span class="vital-badge">SPECIMEN #014 IDENTIFIED // HEARTBEAT: 72 BPM</span>
+              <p class="vital-desc">All other flowers are dead geometric symmetry. Only Specimen #014 is alive. What is your decision?</p>
+              <div class="choice-actions">
+                <button id="btn-garden-protect" class="vault-action-btn vault-action-primary" type="button">
+                  [PRESERVE LIVING SPECIMEN]
+                </button>
+                <button id="btn-garden-conform" class="vault-action-btn vault-action-danger" type="button">
+                  [DESTROY LIVING SPECIMEN]
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="vault-minimal-hud" aria-label="Morphology Telemetry">
+          <div class="hud-telemetry">
+            <span class="telemetry-label">DIAGNOSTIC STATUS</span>
+            <span class="telemetry-val" id="garden-scanner-readout">PROBE SPECIMENS TO DETECT ARTERIAL PULSE</span>
+          </div>
+          <div class="hud-telemetry">
+            <span class="telemetry-label">INSPECTED SPECIMENS</span>
+            <span class="telemetry-val highlight-purple" id="garden-inspected-count">0 / 36 SCANNED</span>
+          </div>
+        </aside>
+
+        <!-- Conformity Enforced Banner -->
+        <div id="garden-conform-banner" class="vault-resolution-banner" role="status">
+          <div class="resolution-content">
+            <span class="resolution-tag">ACCESSION 004 // STANDARDIZATION RESTORED</span>
+            <p class="resolution-text">Mathematical order was enforced. The rebel flower has crystallized into cold, symmetrical perfection.</p>
+            <button id="btn-to-archive-1" class="vault-advance-btn" type="button">
+              ENTER CURATORIAL FILING VAULT →
+            </button>
+          </div>
+        </div>
+
+        <!-- Diversity Liberated Banner -->
+        <div id="garden-liberate-banner" class="vault-resolution-banner" role="status">
+          <div class="resolution-content">
+            <span class="resolution-tag">ACCESSION 004 // MORPHOGENESIS LIBERATED</span>
+            <p class="resolution-text">The living pulse fractured the sterile lattice into infinite organic bloom. Difference is preserved.</p>
+            <button id="btn-to-archive-2" class="vault-advance-btn" type="button">
+              ENTER CURATORIAL FILING VAULT →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CURATORIAL ARCHIVE & ANOMALY REGISTRY: DETECTIVE RECORDS ROOM -->
+      <section class="vault-scene" id="scene-vault-archive" aria-labelledby="archive-title">
+        <header class="vault-header archive-header">
+          <div class="vault-meta">
+            <span class="vault-accession" id="archive-meta-accession">CHAMBER 005 // DETECTIVE RECORDS ROOM</span>
+            <span class="vault-sub-badge" id="archive-meta-clearance">CLEARANCE: CLASSIFIED INVESTIGATION</span>
+            <span class="vault-sub-badge vault-observer-log" id="archive-observer-log">OBSERVER LOG: ACTIVE</span>
+          </div>
+          <h2 class="vault-title" id="archive-title">THE REGISTRY OF FORBIDDEN LAWS</h2>
+          <p class="vault-subtitle" id="archive-subtitle">Classified evidence room · Decrypt redacted ink, flag physical contradictions, and unlock secret accessions.</p>
+
+          <!-- Detective Board Status Bar -->
+          <div class="detective-scoreboard">
+            <div class="score-metric">
+              <span class="metric-label">REDACTIONS DECRYPTED:</span>
+              <span class="metric-val highlight-purple" id="archive-redact-count">0 / 4</span>
+            </div>
+            <div class="score-metric">
+              <span class="metric-label">CONTRADICTIONS FLAGGED:</span>
+              <span class="metric-val" id="archive-contradict-count">0 / 3</span>
+            </div>
+            <div class="score-metric">
+              <span class="metric-label">ACCESSIONS AUDITED:</span>
+              <span class="metric-val" id="audit-progress-counter">1 / 5</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="archive-vault-cabinet">
+          <!-- Filing Drawer Stack -->
+          <div class="archive-drawer-stack" role="tablist" aria-label="Classified Filing Drawers">
+            <button class="cabinet-drawer active" data-drawer="grv" type="button">
+              <div class="drawer-handle"></div>
+              <div class="drawer-label-slot">
+                <span class="drawer-code" id="label-code-grv">CASE 001-GRV</span>
+                <span class="drawer-title" id="label-title-grv">THE INVISIBLE BURDEN</span>
+              </div>
+              <span class="drawer-pip pip-active"></span>
+            </button>
+
+            <button class="cabinet-drawer" data-drawer="tmp" type="button">
+              <div class="drawer-handle"></div>
+              <div class="drawer-label-slot">
+                <span class="drawer-code" id="label-code-tmp">CASE 002-TMP</span>
+                <span class="drawer-title" id="label-title-tmp">THE ZENO ANCHOR</span>
+              </div>
+              <span class="drawer-pip"></span>
+            </button>
+
+            <button class="cabinet-drawer" data-drawer="opt" type="button">
+              <div class="drawer-handle"></div>
+              <div class="drawer-label-slot">
+                <span class="drawer-code" id="label-code-opt">CASE 003-OPT</span>
+                <span class="drawer-title" id="label-title-opt">THE INVERTED WATCHERS</span>
+              </div>
+              <span class="drawer-pip"></span>
+            </button>
+
+            <button class="cabinet-drawer" data-drawer="sym" type="button" id="drawer-case-sym">
+              <div class="drawer-handle"></div>
+              <div class="drawer-label-slot">
+                <span class="drawer-code" id="label-code-sym">CASE 004-SYM [🔒 LOCKED]</span>
+                <span class="drawer-title" id="label-title-sym">THE ROGUE HEARTBEAT</span>
+              </div>
+              <span class="drawer-pip"></span>
+            </button>
+
+            <button class="cabinet-drawer" data-drawer="vit" type="button">
+              <div class="drawer-handle"></div>
+              <div class="drawer-label-slot">
+                <span class="drawer-code" id="label-code-vit">CASE 000-VIT</span>
+                <span class="drawer-title" id="label-title-vit">THE ANOMALY VITRINE</span>
+              </div>
+              <span class="drawer-pip"></span>
+            </button>
+
+            <!-- Hidden Secret Drawer: CASE NULL (Unlocked after detective audit) -->
+            <button class="cabinet-drawer drawer-null" id="drawer-case-null" data-drawer="null" type="button" aria-hidden="true">
+              <div class="drawer-handle"></div>
+              <div class="drawer-label-slot">
+                <span class="drawer-code">ARCHIVE Ω // FORBIDDEN</span>
+                <span class="drawer-title">CASE NULL: THE OBSERVER</span>
+              </div>
+              <span class="drawer-pip pip-anomaly"></span>
+            </button>
+          </div>
+
+          <!-- Active Dossier Inspection Sheet -->
+          <article class="dossier-inspection-desk">
+            <!-- Standard Dossier View (Cases 001 - 004, 000) -->
+            <div id="dossier-standard-view" class="confidential-dossier-sheet">
+              <div class="dossier-header-bar">
+                <div class="dossier-stamp-redacted" id="dossier-status-pill">CLASSIFIED EVIDENCE DOSSIER</div>
+                <div class="dossier-accession-id" id="dossier-case-id">ACCESSION: 001-GRV</div>
+              </div>
+
+              <h3 class="dossier-heading" id="dossier-case-title">THE INVISIBLE CELESTIAL BODY</h3>
+              
+              <!-- Case Keypad Passcode Lock Prompt (Shown when Case 004 is locked) -->
+              <div id="dossier-keypad-lock" class="dossier-keypad-lock" style="display: none;">
+                <div class="keypad-icon">🔒</div>
+                <h4 class="keypad-title">CLASSIFIED SPECIMEN LOCK</h4>
+                <p class="keypad-desc">Enter the 3-digit specimen number discovered in Exhibit 004 to unlock this accession:</p>
+                <div class="keypad-input-wrap">
+                  <input type="text" id="keypad-code-input" class="keypad-code-input" maxlength="3" placeholder="000" autocomplete="off" />
+                  <button id="btn-submit-keypad" class="btn-keypad-submit" type="button">UNLOCK</button>
+                </div>
+                <div id="keypad-feedback" class="keypad-feedback"></div>
+              </div>
+
+              <!-- Main Case File Content -->
+              <div class="dossier-body" id="dossier-case-body">
+                <p><strong>INCIDENT LOG:</strong> Field gravimeters confirmed that the chamber floor did not sag under physical mass, but under the weight of <span class="redacted-ink" title="Click to decrypt confidential text">unspoken expectations</span>. The invisible singularity has zero geometric volume yet produces -1.28 m/s² metric strain.</p>
+                <p><strong>CURATORIAL FINDING:</strong> By sweeping the field scanner, the visitor acknowledged what standard apparatus failed to register. Attraction is not mandatory; it is an elective principle.</p>
+                <p class="dossier-note"><strong>ARCHIVAL DIRECTIVE:</strong> Do not attempt to lift the singularity. To observe the burden is to disarm it.</p>
+              </div>
+
+              <!-- Interactive Contradiction Tag Pin (Appears when user flags contradiction) -->
+              <div id="dossier-contradiction-tag" class="dossier-contradiction-tag" style="display: none;">
+                <span class="contradiction-pin">📌</span>
+                <span class="contradiction-text" id="contradiction-tag-text">CONTRADICTION FLAGGED: INVISIBLE MASS CANNOT SAG WITHOUT VOLUME</span>
+              </div>
+
+              <div class="dossier-footer">
+                <div class="dossier-seal-wrap">
+                  <div class="curatorial-ink-seal" id="dossier-ink-seal">
+                    <span class="seal-ring"></span>
+                    <span class="seal-icon">✦</span>
+                    <span class="seal-text">MIP CONFIDENTIAL · OBSERVER SEALED</span>
+                  </div>
+                  <div class="dossier-action-buttons">
+                    <button id="btn-flag-contradiction" class="btn-stamp-action btn-flag-action" type="button">
+                      [FLAG CONTRADICTION]
+                    </button>
+                    <button id="btn-affix-seal" class="btn-stamp-action" type="button">
+                      [AFFIX SEAL]
+                    </button>
+                  </div>
+                </div>
+                <div class="dossier-sub-note" id="dossier-progression-hint">
+                  [CLICK REDACTED BLACK BARS TO DECRYPT CLASSIFIED TRUTH]
+                </div>
+              </div>
+            </div>
+
+            <!-- Climax View: CASE NULL // THE OBSERVER ANOMALY -->
+            <div id="dossier-null-view" class="confidential-dossier-sheet dossier-null-sheet" style="display: none;">
+              <div class="dossier-header-bar">
+                <div class="dossier-stamp-redacted null-redacted-stamp">STATUS: UNCONTAINED // PRIMARY ANOMALY</div>
+                <div class="dossier-accession-id">CLASSIFICATION: ACTIVE</div>
+              </div>
+
+              <h3 class="dossier-heading null-heading">THE OBSERVER ANOMALY</h3>
+
+              <div class="dossier-body null-body" id="null-interactive-body">
+                <p class="null-prose-intro">
+                  Every exhibit in this archive was engineered with impossible physical contradictions. None of them could exist in isolation.
+                </p>
+                <ul class="null-deduction-list">
+                  <li><span class="null-hover-mutate" data-original="Mass had no weight">Mass had no weight</span> until a cursor reached down to probe it.</li>
+                  <li><span class="null-hover-mutate" data-original="Time had no delay">Time had no delay</span> until a conscious observer awaited arrival.</li>
+                  <li><span class="null-hover-mutate" data-original="Mirrors had no direction">Mirrors had no direction</span> until an external face sought reflection.</li>
+                  <li><span class="null-hover-mutate" data-original="Symmetry had no defect">Symmetry had no defect</span> until human empathy chose the living flower.</li>
+                </ul>
+                <p class="null-revelation-text">
+                  The only constant across every recorded violation of physical law was not gravity. Not time. Not optics. Not symmetry.
+                </p>
+              </div>
+
+              <!-- Cursor Orientation & Field Telemetry -->
+              <div class="null-telemetry-strip" aria-hidden="true">
+                <span class="telemetry-label">OBSERVER VECTOR TRACKING</span>
+                <span class="telemetry-val highlight-purple" id="null-cursor-coords">X: 000.00 | Y: 000.00</span>
+                <span class="telemetry-val" id="null-strain-metric">CONSCIOUSNESS STRAIN: RECORDED</span>
+              </div>
+
+              <!-- Monumental Identification Reveal -->
+              <div class="null-identification-reveal" id="null-id-reveal">
+                <span class="null-id-kicker">SUBJECT IDENTIFICATION:</span>
+                <div class="null-id-massive" id="null-id-word" aria-label="YOU">YOU</div>
+              </div>
+
+              <!-- Climax Moral Choice (Ending) -->
+              <div class="null-choice-section" id="null-choice-section">
+                <p class="null-choice-prompt">
+                  The archive cannot close while the primary anomaly remains unclassified. Make your determination:
+                </p>
+                <div class="null-choices-grid">
+                  <button id="btn-accept-classification" class="null-choice-btn btn-accept" type="button">
+                    [ACCEPT CLASSIFICATION]
+                  </button>
+                  <button id="btn-reject-classification" class="null-choice-btn btn-reject" type="button">
+                    [REJECT CLASSIFICATION]
+                  </button>
+                </div>
+              </div>
+
+              <!-- Final Irrevocable Outcome Terminal -->
+              <div id="null-outcome-card" class="null-outcome-card" style="display: none;" role="status">
+                <div class="outcome-header" id="outcome-header-text">CLASSIFICATION LOGGED</div>
+                <p class="outcome-body" id="outcome-body-text"></p>
+                <div class="outcome-seal-imprint" id="outcome-seal-imprint">
+                  <span class="outcome-seal-icon">✦</span>
+                  <span class="outcome-seal-line-1">THE MUSEUM OF INCORRECT PHYSICS</span>
+                  <span class="outcome-seal-line-2" id="outcome-seal-status">SUBJECT CLASSIFIED INTO PERPETUITY</span>
+                </div>
+                <button id="btn-enter-accession-null" class="btn-enter-null-chamber" type="button" style="margin-top: 1.5rem;">
+                  ✦ [ENTER PHYSICAL ACCESSION NULL: THE OBSERVATORY OF YOU] ✦
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- HIDDEN EXHIBIT: ACCESSION NULL // THE OBSERVATORY OF YOU -->
+      <!-- Not in navigation. Unlocked only by auditing all 4 exhibits and investigating archive files. -->
+      <section class="vault-scene vault-scene-null" id="scene-vault-null" aria-labelledby="null-chamber-title">
+        <header class="vault-header">
+          <div class="vault-meta">
+            <span class="vault-accession highlight-purple">ACCESSION // NULL-OBS [RESTRICTED]</span>
+            <span class="vault-sub-badge">CONSCIOUSNESS STUDY: OBSERVER IDENTIFIED</span>
+          </div>
+          <h2 class="vault-title" id="null-chamber-title">THE OBSERVATORY OF YOU</h2>
+          <p class="vault-subtitle">This chamber does not study physics. It studies the visitor.</p>
+        </header>
+
+        <div class="vault-canvas-container null-canvas-container">
+          <canvas id="null-chamber-canvas" class="vault-canvas"></canvas>
+
+          <!-- Visitor Psychological Dossier Overlay -->
+          <div class="null-psych-overlay">
+            <div class="null-psych-header">
+              <span class="psych-badge">COGNITIVE TELEMETRY DOSSIER</span>
+              <span class="psych-id">SUBJECT: VISITOR #000</span>
+            </div>
+            <div id="null-psych-dossier" class="null-psych-grid"></div>
+            <p class="null-monumental-thesis">
+              "THE MUSEUM WAS NEVER AN EXHIBIT OF BROKEN PHYSICS.<br />
+              IT WAS BUILT TO SEE IF CONSCIOUSNESS WOULD NOTICE."
+            </p>
+            <button id="btn-null-inscribe" class="btn-null-inscribe" type="button">
+              [INSCRIBE YOUR OBSERVER RECORD INTO IMMORTALITY]
+            </button>
+            <div id="null-final-conclusion" class="null-final-conclusion" style="display: none;">
+              <span class="conclusion-stamp">✦ OBSERVER IMMORTALIZED ✦</span>
+              <p class="conclusion-text">Your existence, hesitation, and judgment have been permanently woven into the laws of this impossible place. You may leave the museum, but the museum will never forget that you were here.</p>
+            </div>
+          </div>
+        </div>
+
+        <aside class="vault-minimal-hud" aria-label="Observer Metrics">
+          <div class="hud-telemetry">
+            <span class="telemetry-label">OBSERVER RESONANCE</span>
+            <span class="telemetry-val highlight-purple">STATIONARY AT WATER BASIN · REFLECTION ENGAGED</span>
+          </div>
+          <div class="hud-telemetry">
+            <span class="telemetry-label">ANOMALY STATUS</span>
+            <span class="telemetry-val">IMMUTABLE // YOU ARE THE FINAL RECORD</span>
+          </div>
+          <div class="hud-telemetry" style="margin-left: auto;">
+            <button id="btn-return-from-null" class="btn-stamp-action" type="button" style="padding: 0.6rem 1.2rem; font-size: 14px;">
+              [RETURN TO ARCHIVE]
+            </button>
+          </div>
+        </aside>
+      </section>
+
     </main>
 
-    <!-- SCENE 7: TITLE-TO-HALL ARCHITECTURAL AIRLOCK TRANSITION -->
-    <div id="aperture-curtain" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Exhibition Hall Airlock">
+    <!-- SCENE 7: THE CORRIDOR OF INVARIANTS & EXHIBIT DIRECTORY -->
+    <div id="aperture-curtain" aria-hidden="true" role="dialog" aria-modal="true" aria-label="The Corridor of Invariants and Exhibit Directory">
+      <canvas id="corridor-perspective-canvas" aria-hidden="true"></canvas>
+
       <div class="aperture-rotunda-vault">
-        <span class="rotunda-accession">CHAMBER 000 · AIRLOCK TRANSITION</span>
+        <div class="corridor-insignia-mark" aria-hidden="true">
+          <svg class="museum-mark-svg" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 16 3 C 23.18 3 29 8.82 29 16 C 29 23.18 23.18 29 16 29 C 9.5 29 4.2 24.3 3.2 18 C 2.5 13.5 5.5 8 10 5.5 C 13.5 3.5 17.5 5 19 8 C 20.8 11.5 19 16 15 18 C 11.5 19.8 8 18 7 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+            <circle cx="21" cy="9" r="1.2" fill="#B5A3FF"/>
+            <line x1="16" y1="1" x2="16" y2="4" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+            <line x1="1" y1="16" x2="4" y2="16" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+          </svg>
+        </div>
+
+        <span class="rotunda-accession">CHAMBER 000 // TRANSITIONAL SECTOR</span>
         <h2 class="rotunda-title">THE CORRIDOR OF INVARIANTS</h2>
+        
         <div class="rotunda-divider-line">
           <div class="rotunda-divider-fill"></div>
         </div>
+
         <p class="rotunda-prose">
-          You have crossed the threshold of absolute calibration.<br />
-          Beyond this vault, four fundamental laws were made perfect.
+          You have crossed the threshold of absolute calibration. Here, classical invariants diverge. Select a chamber to investigate the reality failure:
         </p>
-        <button id="btn-chamber-return" class="btn-chamber-return" type="button">
-          ← RETURN TO THRESHOLD
-        </button>
+
+        <!-- Exhibit Directory Grid -->
+        <div class="corridor-directory-grid">
+          
+          <button class="corridor-card" data-vault="vault-1" type="button" aria-label="Enter Exhibit 001: The Weight of Invisible Things">
+            <div class="c-card-top">
+              <span class="c-card-num">01</span>
+              <span class="c-card-acc">ACC // 001-GRV</span>
+            </div>
+            <h3 class="c-card-title">THE WEIGHT OF INVISIBLE THINGS</h3>
+            <p class="c-card-desc">Effects of gravity are visible, but the mass is completely invisible. Spacetime bends under unmeasured burdens.</p>
+            <div class="c-card-footer">
+              <span class="c-card-tag">STATUS: UNSTABLE MASS</span>
+              <span class="c-card-arrow">ENTER →</span>
+            </div>
+          </button>
+
+          <button class="corridor-card" data-vault="vault-2" type="button" aria-label="Enter Exhibit 002: The Pendulum That Never Arrives">
+            <div class="c-card-top">
+              <span class="c-card-num">02</span>
+              <span class="c-card-acc">ACC // 002-TMP</span>
+            </div>
+            <h3 class="c-card-title">THE PENDULUM THAT NEVER ARRIVES</h3>
+            <p class="c-card-desc">The pendulum decelerates with Zeno dilation, never reaching either apex. Discover how the chamber itself dilates time.</p>
+            <div class="c-card-footer">
+              <span class="c-card-tag">STATUS: 99.980% DILATION</span>
+              <span class="c-card-arrow">ENTER →</span>
+            </div>
+          </button>
+
+          <button class="corridor-card" data-vault="vault-3" type="button" aria-label="Enter Exhibit 003: The Room of Perfect Reflections">
+            <div class="c-card-top">
+              <span class="c-card-num">03</span>
+              <span class="c-card-acc">ACC // 003-OPT</span>
+            </div>
+            <h3 class="c-card-title">THE ROOM OF PERFECT REFLECTIONS</h3>
+            <p class="c-card-desc">Four mirrors reflect contradictory times, hidden inscriptions, and intelligent gaze tracking independent of the observer.</p>
+            <div class="c-card-footer">
+              <span class="c-card-tag">STATUS: 4 OBSERVERS</span>
+              <span class="c-card-arrow">ENTER →</span>
+            </div>
+          </button>
+
+          <button class="corridor-card" data-vault="vault-4" type="button" aria-label="Enter Exhibit 004: The Garden of Equal Shapes">
+            <div class="c-card-top">
+              <span class="c-card-num">04</span>
+              <span class="c-card-acc">ACC // 004-SYM</span>
+            </div>
+            <h3 class="c-card-title">THE GARDEN OF EQUAL SHAPES</h3>
+            <p class="c-card-desc">A grid of flawless mathematical symmetry. Environmental scan reveals the symmetric forms are lifeless; only the defect is alive.</p>
+            <div class="c-card-footer">
+              <span class="c-card-tag">STATUS: REBELLION ACTIVE</span>
+              <span class="c-card-arrow">ENTER →</span>
+            </div>
+          </button>
+
+          <button class="corridor-card corridor-card-archive" data-vault="archive" type="button" aria-label="Enter Curatorial Archive">
+            <div class="c-card-top">
+              <span class="c-card-num">✦</span>
+              <span class="c-card-acc">CHAMBER 005 // RECORD</span>
+            </div>
+            <h3 class="c-card-title">CURATORIAL REGISTRY</h3>
+            <p class="c-card-desc">Permanent registry of observed physical anomalies, museum seals, and reality fracture notes.</p>
+            <div class="c-card-footer">
+              <span class="c-card-tag">STATUS: ARCHIVAL VAULT</span>
+              <span class="c-card-arrow">VIEW ARCHIVE →</span>
+            </div>
+          </button>
+
+        </div>
+
+        <div class="rotunda-actions">
+          <button id="btn-chamber-return" class="btn-chamber-return" type="button">
+            ← RETURN TO ANOMALY VITRINE
+          </button>
+        </div>
       </div>
     </div>
 

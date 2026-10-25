@@ -508,6 +508,8 @@ class MuseumAudioEngine {
     } catch {
       // Fallback
     }
+  }
+
   playGravityStrain(ratio = 0.5) {
     if (this.isMuted) return;
     try {
@@ -597,6 +599,143 @@ class MuseumAudioEngine {
         osc.start(now + idx * 0.08);
         osc.stop(now + idx * 0.08 + 3.2);
       });
+    } catch {
+      // Fallback
+    }
+  }
+
+  /**
+   * Causality Violation 1: An echo arrives BEFORE the strike (Acausal Pre-Echo)
+   */
+  playAcausalChime(freq = 660) {
+    if (this.isMuted) return;
+    try {
+      this.ensureContext();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+
+      // 1. Ghost Pre-Echo (Arrives 260ms before the strike)
+      const preOsc = this.ctx.createOscillator();
+      const preGain = this.ctx.createGain();
+      preOsc.type = 'sine';
+      preOsc.frequency.setValueAtTime(freq * 0.98, now);
+      preGain.gain.setValueAtTime(0.0001, now);
+      preGain.gain.exponentialRampToValueAtTime(0.018, now + 0.12);
+      preGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+      preOsc.connect(preGain);
+      preGain.connect(this.ctx.destination);
+      preOsc.start(now);
+      preOsc.stop(now + 0.26);
+
+      // 2. Main strike arrives later
+      const mainOsc = this.ctx.createOscillator();
+      const mainGain = this.ctx.createGain();
+      mainOsc.type = 'sine';
+      mainOsc.frequency.setValueAtTime(freq, now + 0.26);
+      mainGain.gain.setValueAtTime(0.001, now + 0.26);
+      mainGain.gain.exponentialRampToValueAtTime(0.09, now + 0.28);
+      mainGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+      mainOsc.connect(mainGain);
+      mainGain.connect(this.ctx.destination);
+      mainOsc.start(now + 0.26);
+      mainOsc.stop(now + 1.9);
+    } catch {
+      // Fallback
+    }
+  }
+
+  /**
+   * Causality Violation 2: Wrong Location Pan (Sound pans opposite to screen position)
+   */
+  playInvertedStereo(freq = 520, normX = 0) {
+    if (this.isMuted) return;
+    try {
+      this.ensureContext();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      // Inverted pan: if screen is right (+0.8), sound pans left (-0.8)
+      const invertedPan = Math.max(-1, Math.min(1, -normX));
+      const panner = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
+      if (panner) panner.pan.setValueAtTime(invertedPan, now);
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.exponentialRampToValueAtTime(0.05, now + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+
+      if (panner) {
+        osc.connect(gain);
+        gain.connect(panner);
+        panner.connect(this.ctx.destination);
+      } else {
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+      }
+
+      osc.start(now);
+      osc.stop(now + 0.85);
+    } catch {
+      // Fallback
+    }
+  }
+
+  /**
+   * Causality Violation 3: Phantom Footsteps on Marble (Occur after visitor halts)
+   */
+  playPhantomStep() {
+    if (this.isMuted) return;
+    try {
+      this.ensureContext();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+
+      // Two subtle muffled heel strikes on marble
+      [0.0, 0.38].forEach((delay) => {
+        const stepTime = now + delay;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(85, stepTime);
+        osc.frequency.exponentialRampToValueAtTime(42, stepTime + 0.12);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(320, stepTime);
+
+        gain.gain.setValueAtTime(0.001, stepTime);
+        gain.gain.exponentialRampToValueAtTime(0.035, stepTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, stepTime + 0.18);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(stepTime);
+        osc.stop(stepTime + 0.2);
+      });
+    } catch {
+      // Fallback
+    }
+  }
+
+  /**
+   * Causality Violation 4: Ambient Hum shifts frequency downward when visitor observes
+   */
+  modulateAmbientObservation(isObserved) {
+    if (!this.ctx || !this.droneOsc1 || !this.droneOsc2) return;
+    try {
+      const now = this.ctx.currentTime;
+      // Normal F1: 43.65 Hz -> Shifts down to D1: 36.7 Hz when observed
+      const targetFreq = isObserved ? 36.7 : 43.65;
+      this.droneOsc1.frequency.setTargetAtTime(targetFreq, now, 0.6);
+      this.droneOsc2.frequency.setTargetAtTime(targetFreq + 0.3, now, 0.6);
     } catch {
       // Fallback
     }

@@ -337,44 +337,38 @@ export class WorldGridBg {
   }
 
   // =========================================================================
-  // 4. TITLE SAMPLING (THE MUSEUM OF / INCORRECT / PHYSICS)
+  // 4. GRAVITATIONAL LENSING SINGULARITY TARGETS (COSMIC ACCRETION RING)
+  // Replaces particle letters with an impossible relativistic geodesic ring
   // =========================================================================
-  prepareTitleTargets() {
+  prepareSingularityTargets() {
     const isMobile = this.width < 768;
     const w = this.width;
     const h = this.height;
-    const ctx = this.offscreenCtx;
 
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    // Center of gravitational anomaly (aligned with future vitrine location)
+    const cx = isMobile ? w * 0.5 : w * 0.70;
+    const cy = h * 0.50;
 
-    const cx = w / 2;
-    const cy = h * 0.44;
-
-    const size1 = isMobile ? 22 : 36;
-    const size2 = isMobile ? 48 : 86;
-
-    ctx.font = `600 ${size1}px "Playfair Display", Georgia, serif`;
-    ctx.fillText('THE MUSEUM OF', cx, cy - 50);
-
-    ctx.font = `700 ${size2}px "Playfair Display", Georgia, serif`;
-    ctx.fillText('INCORRECT PHYSICS', cx, cy + 40);
-
-    const imgData = ctx.getImageData(0, 0, w, h).data;
     const sampledPoints = [];
-    const step = isMobile ? 4 : 5;
+    const ringCount = 6;
+    const baseRadius = isMobile ? 80 : 130;
 
-    for (let y = 0; y < h; y += step) {
-      for (let x = 0; x < w; x += step) {
-        const idx = (y * w + x) * 4;
-        if (imgData[idx + 3] > 110) {
-          sampledPoints.push({ x, y });
-        }
+    for (let ring = 0; ring < ringCount; ring++) {
+      const radius = baseRadius + ring * (isMobile ? 18 : 28);
+      const pointsInRing = Math.floor(60 + ring * 35);
+
+      for (let p = 0; p < pointsInRing; p++) {
+        const theta = (p / pointsInRing) * Math.PI * 2;
+        // Relativistic spiral perturbation
+        const rPerturbed = radius + Math.sin(theta * 3 + ring) * 12;
+        sampledPoints.push({
+          x: cx + Math.cos(theta) * rPerturbed,
+          y: cy + Math.sin(theta) * rPerturbed * 0.72 // Projected orbital incline
+        });
       }
     }
 
+    // Assign targets to particles
     if (sampledPoints.length > 0) {
       for (let i = 0; i < this.particles.length; i++) {
         const p = this.particles[i];
@@ -465,9 +459,9 @@ export class WorldGridBg {
         if (this.phaseTime >= 3.4) {
           this.phase = 'TITLE_FORMATION';
           this.phaseTime = 0;
-          this.prepareTitleTargets();
+          this.prepareSingularityTargets();
           museumAudio.playMonumentalReveal();
-          this.triggerShockwave(this.width / 2, this.height * 0.44);
+          this.triggerShockwave(this.width * 0.70, this.height * 0.50);
         }
         break;
       }
@@ -479,6 +473,18 @@ export class WorldGridBg {
           this.phase = 'TITLE_ACTIVE';
           this.phaseTime = 0;
           document.body.classList.remove('opening-film-mode');
+
+          // CULL PARTICLES BY 96%: Keep only a handful of distant flecks to prevent particle soup
+          this.particles = this.particles.slice(0, 75);
+          for (const p of this.particles) {
+            p.vx = (Math.random() - 0.5) * 1.5;
+            p.vy = -0.4 - Math.random() * 0.8;
+            p.isDispersed = true;
+            // Push away from left editorial text area
+            if (p.x < this.width * 0.52) {
+              p.x = this.width * 0.52 + Math.random() * (this.width * 0.45);
+            }
+          }
 
           const thresholdScene = document.getElementById('scene-6-threshold');
           if (thresholdScene) thresholdScene.classList.add('scene-active');
@@ -679,17 +685,92 @@ export class WorldGridBg {
   }
 
   // =========================================================================
-  // AMBIENT PARTICLES IN EXHIBIT VITRINE
+  // AMBIENT PARTICLES (90% UPWARD, 10% DOWNWARD/SIDEWAYS DRIFT)
+  // Safe reading zones rigorously preserved
   // =========================================================================
   updateAmbientParticles(dt) {
-    for (const p of this.particles) {
-      p.y -= 0.22;
-      p.x += Math.sin(this.time * 0.8 + p.id) * 0.18;
+    const isThresholdActive = document.getElementById('scene-6-threshold')?.classList.contains('scene-active');
+    const safeZoneRight = this.width * 0.52; // Left half reserved for editorial reading comfort
+    const mouse = this.mouse;
+
+    for (let i = 0; i < this.particles.length; i++) {
+      const p = this.particles[i];
+
+      // Physics Failure: 90% drift upward, 10% drift downward or horizontally
+      const isRogue = (p.id % 10 === 0);
+      if (isRogue) {
+        p.y += 0.28; // 10% fall downward
+        p.x -= Math.cos(this.time * 0.8 + p.id) * 0.24; // drift against prevailing drift
+      } else {
+        p.y -= 0.42; // 90% rise upward (anti-gravity standard)
+        p.x += Math.sin(this.time * 0.65 + p.id) * 0.16;
+      }
+
+      // Cursor Intrusion: Abnormal attraction / repulsion
+      if (mouse.isOver) {
+        const dx = p.x - mouse.x;
+        const dy = p.y - mouse.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 110) {
+          const force = (110 - dist) / 110;
+          if (p.id % 5 === 0) {
+            // Abnormal attraction: 20% of particles are pulled INTO cursor
+            p.x -= (dx / (dist + 1)) * force * 1.5;
+            p.y -= (dy / (dist + 1)) * force * 1.5;
+          } else {
+            // Standard repulsion: 80% move away
+            p.x += (dx / (dist + 1)) * force * 2.2;
+            p.y += (dy / (dist + 1)) * force * 2.2;
+          }
+        }
+      }
+
+      // Safe reading zone enforcement: prevent particles from obscuring text
+      if (isThresholdActive && p.x < safeZoneRight) {
+        p.x += 1.8; // Repel out of reading zone toward peripheral empty space
+        p.alpha = Math.max(0.01, p.alpha * 0.85); // Fade to near invisible inside text zone
+      } else {
+        p.alpha = 0.22;
+      }
+
+      // Boundary respawn with inverted bias
       if (p.y < -20) {
         p.y = this.height + 20;
-        p.x = Math.random() * this.width;
+        p.x = safeZoneRight + Math.random() * (this.width - safeZoneRight);
+      } else if (p.y > this.height + 20) {
+        p.y = -20;
+        p.x = safeZoneRight + Math.random() * (this.width - safeZoneRight);
       }
     }
+  }
+
+  // =========================================================================
+  // ARCHITECTURAL SURVEY LINES & IMPOSSIBLE MEASUREMENTS
+  // Replaces dust noise with confident museum restraint
+  // =========================================================================
+  drawArchitecturalLines() {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(245, 241, 232, 0.06)';
+    ctx.lineWidth = 1;
+
+    // Horizontal baseline survey line
+    const surveyY = this.height - 28;
+    ctx.beginPath();
+    ctx.moveTo(32, surveyY);
+    ctx.lineTo(this.width - 32, surveyY);
+    ctx.stroke();
+
+    // Geometric survey ticks along baseline (No text collision)
+    const tickStep = 64;
+    for (let x = 32; x <= this.width - 32; x += tickStep) {
+      ctx.beginPath();
+      ctx.moveTo(x, surveyY - 3);
+      ctx.lineTo(x, surveyY + 3);
+      ctx.stroke();
+    }
+
+    ctx.restore();
   }
 
   triggerShockwave(originX, originY) {
@@ -754,12 +835,19 @@ export class WorldGridBg {
     }
 
     // -----------------------------------------------------------------------
-    // C. DRAW READABLE TYPOGRAPHY (Overlay during Sentences & Physics-Defying Title)
+    // C. ARCHITECTURAL SURVEY LINES (Confidence & Restraint)
+    // -----------------------------------------------------------------------
+    if (this.phase === 'TITLE_ACTIVE' || this.phase === 'HALL_UNFOLD') {
+      this.drawArchitecturalLines();
+    }
+
+    // -----------------------------------------------------------------------
+    // D. DRAW READABLE TYPOGRAPHY (Overlay during Sentences & Physics-Defying Title)
     // -----------------------------------------------------------------------
     if (this.phase === 'SENTENCE_1' || this.phase === 'SENTENCE_2' || this.phase === 'SENTENCE_3') {
       this.drawSentenceTypography();
     } else if (this.phase === 'TITLE_FORMATION') {
-      this.drawPhysicsDefyingTitle();
+      this.drawSingularityLensing();
     }
 
     // -----------------------------------------------------------------------
@@ -945,112 +1033,54 @@ export class WorldGridBg {
   }
 
   // =========================================================================
-  // DRAW THE GRAND TITLE: PHYSICALLY INCORRECT & ZERO-G BUOYANT
+  // COSMIC GRAVITATIONAL LENSING SINGULARITY (REPLACES PARTICLE WORDS)
+  // Swirling relativistic accretion ring that collapses gracefully without obscuring text
   // =========================================================================
-  drawPhysicsDefyingTitle() {
+  drawSingularityLensing() {
     const ctx = this.ctx;
     const t = this.phaseTime;
     const isMobile = this.width < 768;
-    const cx = this.width / 2;
-    const cy = this.height * 0.44;
+    const cx = isMobile ? this.width * 0.5 : this.width * 0.70;
+    const cy = this.height * 0.50;
 
-    const titleAlpha = Math.min(1.0, t / 1.2);
+    const ringAlpha = Math.min(1.0, t / 1.0);
     ctx.save();
-    ctx.globalAlpha = titleAlpha;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.globalAlpha = ringAlpha;
 
-    // 1. "THE MUSEUM OF" (Archival, Clean, Dignified Serif)
-    const sizePrefix = isMobile ? 22 : 36;
-    ctx.font = `600 ${sizePrefix}px "Playfair Display", Georgia, serif`;
-    ctx.fillStyle = this.COLOR_TEXT;
-    ctx.fillText('THE MUSEUM OF', cx, cy - (isMobile ? 36 : 56));
+    // Relativistic gravitational lensing glow
+    const glowGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, isMobile ? 180 : 280);
+    glowGrad.addColorStop(0, 'rgba(181, 163, 255, 0.22)');
+    glowGrad.addColorStop(0.4, 'rgba(149, 136, 255, 0.12)');
+    glowGrad.addColorStop(0.8, 'rgba(110, 90, 232, 0.04)');
+    glowGrad.addColorStop(1, 'rgba(8, 11, 23, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, isMobile ? 180 : 280, 0, Math.PI * 2);
+    ctx.fill();
 
-    // 2. "INCORRECT" — PHYSICALLY INCORRECT GLYPH BEHAVIOR:
-    // The word "INCORRECT" has impossible physics:
-    // - Middle letter 'R' defies gravity: it floats 16px ABOVE the baseline!
-    // - Its cast shadow falls UPWARDS into negative space!
-    // - Letter 'C' has impossible non-Euclidean perspective shear!
-    const sizeMain = isMobile ? 42 : 78;
-    const wordIncorrect = 'INCORRECT';
-    const spacing = sizeMain * 0.62;
-    const totalIncorrectW = wordIncorrect.length * spacing;
-    const startXInc = cx - totalIncorrectW / 2 + spacing / 2;
-    const baselineYInc = cy + (isMobile ? 14 : 26);
-
-    ctx.font = `700 ${sizeMain}px "Playfair Display", Georgia, serif`;
-
-    for (let i = 0; i < wordIncorrect.length; i++) {
-      const char = wordIncorrect[i];
-      let charX = startXInc + i * spacing;
-      let charY = baselineYInc;
-      let rot = 0;
-
-      // Glyph index 4 ('R') or 5 ('R'): breaks gravitational law
-      if (i === 4) {
-        // Floating 18px above baseline
-        const levitation = Math.sin(this.time * 2.8) * 4 - 16;
-        charY += levitation;
-
-        // Shadow falling UPWARD into the sky
-        ctx.save();
-        ctx.fillStyle = 'rgba(181, 163, 255, 0.22)';
-        ctx.fillText(char, charX + 4, charY - 18);
-        ctx.restore();
-      } else if (i === 5) {
-        // Impossible non-Euclidean skew
-        rot = Math.sin(this.time * 2.2) * 0.08;
-      }
-
-      ctx.save();
-      ctx.translate(charX, charY);
-      if (rot !== 0) ctx.rotate(rot);
-
-      // Color: Electric Lavender
-      ctx.fillStyle = (i === 4 || i === 5) ? '#FFFFFF' : this.COLOR_LAVENDER;
-      ctx.fillText(char, 0, 0);
-      ctx.restore();
+    // Event Horizon Photonic Rings
+    const baseR = isMobile ? 90 : 140;
+    for (let i = 0; i < 3; i++) {
+      const r = baseR + i * 28 + Math.sin(this.time * 2.5 + i) * 6;
+      ctx.strokeStyle = i === 0 ? 'rgba(181, 163, 255, 0.45)' : 'rgba(149, 136, 255, 0.22)';
+      ctx.lineWidth = i === 0 ? 1.5 : 0.8;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, r, r * 0.72, this.time * 0.25 * (i % 2 === 0 ? 1 : -1), 0, Math.PI * 2);
+      ctx.stroke();
     }
 
-    // 3. "PHYSICS" — ZERO-G BUOYANT WAVE MOTION:
-    // Each glyph in "PHYSICS" floats with liquid-light zero-G buoyancy,
-    // undulating like a superfluid wave with phase-shifted sinusoidal drift!
-    const wordPhysics = 'PHYSICS';
-    const totalPhysicsW = wordPhysics.length * spacing;
-    const startXPhys = cx - totalPhysicsW / 2 + spacing / 2;
-    const baselineYPhys = baselineYInc + (isMobile ? 46 : 82);
-
-    for (let i = 0; i < wordPhysics.length; i++) {
-      const char = wordPhysics[i];
-      const charX = startXPhys + i * spacing;
-      // Zero-G superfluid wave: each letter floats weightlessly
-      const buoyantFloat = Math.sin(this.time * 2.4 + i * 0.75) * 5.5;
-      const charY = baselineYPhys + buoyantFloat;
-
-      ctx.save();
-      ctx.translate(charX, charY);
-
-      // Mouse proximity interaction: letters gently repel from mouse
-      if (this.mouse.isOver) {
-        const dist = Math.hypot(charX - this.mouse.x, charY - this.mouse.y);
-        if (dist < 120) {
-          const push = (120 - dist) / 120 * 8;
-          ctx.translate(0, -push);
-          ctx.fillStyle = '#FFFFFF';
-        } else {
-          ctx.fillStyle = this.COLOR_TEXT;
-        }
-      } else {
-        ctx.fillStyle = this.COLOR_TEXT;
-      }
-
-      ctx.fillText(char, 0, 0);
-
-      // Faint quantum wave reflection
-      ctx.fillStyle = 'rgba(149, 136, 255, 0.16)';
-      ctx.fillText(char, 0, 10);
-
-      ctx.restore();
+    // Tangential Relativistic Photon Geodesic Ticks
+    const tickCount = 18;
+    ctx.strokeStyle = 'rgba(245, 241, 232, 0.35)';
+    ctx.lineWidth = 1;
+    for (let j = 0; j < tickCount; j++) {
+      const angle = (j / tickCount) * Math.PI * 2 + this.time * 0.6;
+      const rInner = baseR - 8;
+      const rOuter = baseR + 8;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(angle) * rInner, cy + Math.sin(angle) * rInner * 0.72);
+      ctx.lineTo(cx + Math.cos(angle) * rOuter, cy + Math.sin(angle) * rOuter * 0.72);
+      ctx.stroke();
     }
 
     ctx.restore();
